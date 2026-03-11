@@ -2,7 +2,8 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <title>runner管理系统首页</title>
+    <title>RUNNER 管理系统首页</title>
+    <link rel="icon" type="image/svg+xml" href="/logo.svg">
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -10,28 +11,29 @@
         <!-- Sidebar -->
         <div class="sidebar-container" id="sidebar">
             <div class="sidebar-logo">
-                <img src="https://api.dicebear.com/7.x/notionists/svg?seed=bob" alt="Avatar" class="avatar">
-                <span class="profile-name">波比</span>
+                <img src="/image.png" alt="Profile" class="sidebar-brand-logo">
+                <span class="profile-name">bobi908</span>
             </div>
 
             <div class="sidebar-menu">
                 <div class="menu-group">
                     <div class="menu-group-title" onclick="toggleSubMenu('home-menu', this)">
-                        <div class="title-left"><span class="icon">⌂</span><span>主页</span></div>
+                        <div class="title-left"><span>主页</span></div>
                         <span class="arrow">v</span>
                     </div>
-                    <div class="sub-menu" id="home-menu">
+                    <div class="sub-menu is-open" id="home-menu">
                         <div class="sub-menu-item active-sub" id="nav-home" onclick="switchView('homeView', 'nav-home')">runner首页</div>
                     </div>
                 </div>
 
                 <div class="menu-group">
                     <div class="menu-group-title" onclick="toggleSubMenu('payment-menu', this)">
-                        <div class="title-left"><span class="icon">➤</span><span>支付管理</span></div>
+                        <div class="title-left"><span>支付管理</span></div>
                         <span class="arrow">&lt;</span>
                     </div>
-                    <div class="sub-menu" id="payment-menu" style="display: none;">
+                    <div class="sub-menu" id="payment-menu">
                         <div class="sub-menu-item" id="nav-payment" onclick="switchView('paymentView', 'nav-payment')">交易列表</div>
+                        <a href="/runner-approved-history" target="_blank" class="sub-menu-item" style="text-decoration:none;">审批记录</a>
                     </div>
                 </div>
             </div>
@@ -51,9 +53,8 @@
                     </div>
                     <div class="navbar-right">
                         <span>欢迎使用runner系统</span>
-                        <a href="/approval-history" target="_blank" class="navbar-icon" style="text-decoration:none; color:inherit;">🏆 审批记录</a>
-                        <span class="navbar-icon">⛶ 全屏</span>
-                        <span class="navbar-icon">⎋ 退出</span>
+                        <span id="btnFullScreen" class="navbar-icon">全屏</span>
+                        <span id="btnLogout" class="navbar-icon">退出</span>
                     </div>
                 </div>
                 <div class="tags-view">
@@ -64,8 +65,8 @@
                     </div>
                     <div class="tags-right">
                         <span class="nav-arrow">»</span>
-                        <span class="page-action">页面操作 ▼</span>
-                        <span class="refresh">↻ 刷新</span>
+                        <span class="page-action">页面操作</span>
+                        <span class="refresh">刷新</span>
                     </div>
                 </div>
             </div>
@@ -79,7 +80,7 @@
 
                 <!-- Payment View (The existing table data) -->
                 <div id="paymentView" style="display: none;">
-                    <div class="filter-container">
+                    <div class="filter-container" id="filterSection">
                         <div class="filter-row">
                             <div class="form-item">
                                 <label>跑分者:</label>
@@ -91,20 +92,20 @@
                             </div>
                             <div class="form-item">
                                 <label>下游单号:</label>
-                                <input type="text" placeholder="" style="width: 140px;">
+                                <input type="text" id="filterDownstreamNo" placeholder="" style="width: 140px;">
                             </div>
                             <div class="form-item">
                                 <label>充值单号:</label>
-                                <input type="text" placeholder="" style="width: 140px;">
+                                <input type="text" id="filterRechargeNo" placeholder="" style="width: 140px;">
                             </div>
                         </div>
                         
                         <div class="filter-row">
-                            <div class="form-item"><label>收款账户:</label><input type="text" placeholder="" style="width: 120px;"></div>
-                            <div class="form-item"><label>卡号:</label><input type="text" placeholder="" style="width: 120px;"></div>
-                            <div class="form-item"><label>类型:</label><select><option>抢单充值</option></select></div>
-                            <div class="form-item"><label>状态:</label><select><option>已转账</option></select></div>
-                            <div class="form-item"><label>通知下发状态:</label><select><option>请选择</option></select></div>
+                            <div class="form-item"><label>收款账户:</label><input type="text" id="filterReceiver" placeholder="" style="width: 120px;"></div>
+                            <div class="form-item"><label>卡号:</label><input type="text" id="filterCardNo" placeholder="" style="width: 120px;"></div>
+                            <div class="form-item"><label>类型:</label><select id="filterType"><option value="">请选择</option><option>抢单充值</option></select></div>
+                            <div class="form-item"><label>状态:</label><select id="filterStatus"><option value="">请选择</option><option value="pending">提现中</option></select></div>
+                            <div class="form-item"><label>通知下发状态:</label><select id="filterNotifyStatus"><option value="">请选择</option></select></div>
                         </div>
 
                         <div class="filter-row">
@@ -121,33 +122,33 @@
 
                         <div class="filter-row">
                             <div class="form-item"><label>请求货币:</label><select><option>请选择</option></select></div>
-                            <div class="form-item"><label>处理人:</label><input type="text" placeholder="" style="width: 120px;"></div>
+                            <div class="form-item"><label>处理人:</label><input type="text" id="filterProcessor" placeholder="" style="width: 120px;"></div>
                             <div class="form-item">
                                 <label>充值金额:</label>
-                                <input type="text" class="small-input" placeholder="最小值">
+                                <input type="text" id="filterMinAmount" class="small-input" placeholder="最小值">
                                 <span class="separator">-</span>
-                                <input type="text" class="small-input" placeholder="最大值">
+                                <input type="text" id="filterMaxAmount" class="small-input" placeholder="最大值">
                             </div>
                             <div class="form-item">
                                 <label>入账时间:</label>
-                                <input type="text" class="date-input clear" placeholder="开始时间">
+                                <input type="text" id="filterEntryStart" class="date-input clear" placeholder="开始时间">
                                 <span class="separator">-</span>
-                                <input type="text" class="date-input clear" placeholder="结束时间">
+                                <input type="text" id="filterEntryEnd" class="date-input clear" placeholder="结束时间">
                             </div>
                         </div>
 
                         <div class="filter-actions">
-                            <button class="btn btn-green">🔍 搜索</button>
-                            <button class="btn btn-orange">🧹 重置</button>
-                            <button class="btn btn-blue">📅 今天</button>
-                            <button class="btn btn-gray">📅 昨天</button>
+                            <button id="btnSearch" class="btn btn-green">🔍 搜索</button>
+                            <button id="btnResetFilter" class="btn btn-yellow">🧹 重置</button>
+                            <button id="btnToday" class="btn btn-blue">📅 今天</button>
+                            <button id="btnYesterday" class="btn btn-grey">📅 昨天</button>
                         </div>
                     </div>
 
                     <div class="table-container">
                         <div class="table-toolbar">
                             <div class="btn-group">
-                                <button class="toolbar-btn">🔍</button>
+                                <button class="toolbar-btn" id="toggleFilterBtn">🔍</button>
                                 <button class="toolbar-btn">↻</button>
                                 <button class="toolbar-btn">▤ ▾</button>
                                 <button class="toolbar-btn">⤓</button>

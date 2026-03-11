@@ -3,28 +3,33 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Approval History</title>
+    <title>RUNNER Approval History</title>
+    <link rel="icon" type="image/svg+xml" href="/logo.svg">
     <!-- We will reuse the same stylesheet as the main dashboard to ensure it looks EXACTLY identical -->
     <link rel="stylesheet" href="/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        body { background-color: #f0f2f5; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background-color: #f0f2f5; margin: 0; padding: 0; font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
         .history-container { padding: 20px; }
         .top-actions { display: flex; justify-content: flex-end; margin-bottom: 10px; gap: 8px; }
-        .table-wrap { background: #fff; padding: 15px; border-radius: 4px; box-shadow: 0 1px 4px rgba(0,0,0,0.05); }
+        .table-wrap { background: #fff; padding: 10px; border-radius: 4px; box-shadow: 0 1px 4px rgba(0,0,0,0.05); }
         .pagination { display: flex; justify-content: center; gap: 5px; margin-top: 15px; }
-        .page-btn { padding: 4px 10px; border: 1px solid #dcdfe6; background: #fff; color: #606266; border-radius: 4px; cursor: pointer; text-decoration: none; font-size: 13px; }
-        .page-btn.active { background: #409eff; color: #fff; border-color: #409eff; }
+        .page-btn { height: 28px; min-width: 28px; padding: 0 4px; background: #f4f4f5; border: none; border-radius: 2px; color: #606266; font-size: 13px; cursor: pointer; display: flex; align-items: center; justify-content: center; margin: 0 2px; outline: none; }
+        .page-btn.active { background: #409eff; color: #fff; }
+        .page-btn:disabled { color: #c0c4cc; cursor: not-allowed; background: #f4f4f5; }
+        .page-btn:hover:not(:disabled):not(.active) { color: #409eff; }
         
         /* Utility styles to strictly match the picture */
         .text-red { color: #f56c6c; }
-        .badge { display: inline-block; padding: 3px 8px; border-radius: 4px; font-weight: normal; font-size: 12px; }
+        .badge { display: inline-block; padding: 2px 6px; border-radius: 4px; font-weight: normal; font-size: 11px; }
         .badge.blue { background: #ecf5ff; border: 1px solid #d9ecff; color: #409eff; }
         .badge.green { background: #f0f9eb; border: 1px solid #e1f3d8; color: #67c23a; }
         .badge.gray { background: #f4f4f5; color: #909399; border: 1px solid #d3d4d6; }
         
-        .action-btn { font-size: 12px; padding: 4px 8px; border: none; border-radius: 4px; cursor: pointer; color: #fff; }
+        .action-btn { font-size: 11px; padding: 4px 10px; border: none; border-radius: 4px; cursor: pointer; color: #fff; min-width: 80px; white-space: nowrap; display: inline-flex; align-items: center; justify-content: center; margin: 2px 0; text-decoration: none; }
         .action-btn.btn-teal { background-color: #00b4a7; }
         .action-btn.btn-green { background-color: #4CAF50; }
+        .action-cell { display: flex; flex-direction: column; align-items: center; gap: 4px; }
     </style>
 </head>
 <body>
@@ -45,7 +50,7 @@
             <div class="table-toolbar" style="display: flex; justify-content: flex-end; padding-bottom: 10px; border-bottom: 1px solid #ebeef5; margin-bottom: 10px;">
                 <div class="btn-group">
                     <button class="toolbar-btn" onclick="filterByWorker()">🔍</button>
-                    <button class="toolbar-btn" onclick="location.reload()">↻</button>
+                    <button class="toolbar-btn" id="refresh-history">↻</button>
                     <button class="toolbar-btn">▤ ▾</button>
                     <button class="toolbar-btn">⤓</button>
                 </div>
@@ -73,70 +78,51 @@
                         <th>操作2</th>
                     </tr>
                 </thead>
-                <tbody>
+                <tbody id="history-tbody">
                     <% if (transactions.length === 0) { %>
                         <tr><td colspan="18" style="text-align: center; padding: 40px; color: #999;">暂无数据</td></tr>
                     <% } %>
                     <% transactions.forEach((tx, i) => { 
-                        // Helper to format date
                         function fmt(d) {
                             if (!d) return '--';
                             const date = new Date(d);
-                            // Adjust for GMT+7
                             const localTime = new Date(date.getTime() + (7 * 60 * 60 * 1000));
                             const iso = localTime.toISOString();
-                            // extracts YYYY-MM-DD from 2026-03-01T11:32:27.000Z
                             const ymd = iso.split('T')[0];
                             const time = iso.split('T')[1].substring(0, 8);
                             return ymd + ' ' + time;
                         }
                     %>
                     <tr class="tx-row" data-worker="<%= tx.approvedBy %>">
-                        <!-- 1. 充值单号 -->
                         <td class="text-red"><%= tx.recharge_no %></td>
-                        <!-- 2. 跑分者 -->
                         <td>0931263463</td>
-                        <!-- 3. 跑分者类型 -->
                         <td><span class="badge blue">代付</span></td>
-                        <!-- 4. 充值金额 -->
                         <td><%= Number(tx.amount).toLocaleString('vi-VN') %></td>
-                        <!-- 5. 收款账户 -->
                         <td><%= tx.receiver_name %></td>
-                        <!-- 6. 卡号/虚拟地址 -->
                         <td><%= tx.card_number %></td>
-                        <!-- 7. 银行名称 -->
                         <td><%= tx.bank_name %></td>
-                        <!-- 8. 提取状态 -->
                         <td><span class="badge blue">取消跟单</span></td>
-                        <!-- 9. 充值单来源 -->
                         <td><span class="badge blue">商户代理</span></td>
-                        <!-- 10. 创建时间 -->
                         <td>
                             <div style="line-height:1.2"><%= fmt(tx.created_at).split(' ')[0] %><br><%= fmt(tx.created_at).split(' ')[1] %></div>
                         </td>
-                        <!-- 11. 接单时间 -->
                         <td>1分钟内</td>
-                        <!-- 12. 转账时间 -->
                         <td>
                             <div style="line-height:1.2"><%= fmt(tx.created_at).split(' ')[0] %><br><%= fmt(tx.created_at).split(' ')[1] %></div>
                         </td>
-                        <!-- 13. 入账时间 -->
-                        <td>--</td>
-                        <!-- 14. 处理人 -->
+                        <td>
+                            <div style="line-height:1.2"><%= fmt(tx.updated_at).split(' ')[0] %><br><%= fmt(tx.updated_at).split(' ')[1] %></div>
+                        </td>
                         <td class="worker-name"><%= tx.approvedBy %></td>
-                        <!-- 15. 跑分者等级 -->
                         <td><span class="badge green">0.5小时</span></td>
-                        <!-- 16. 允许入账时间 -->
                         <td>
                             <div style="line-height:1.2"><%= fmt(tx.allow_transfer_time).split(' ')[0] %><br><%= fmt(tx.allow_transfer_time).split(' ')[1] %></div>    
                         </td>
-                        <!-- 17. 操作 -->
+                        <td><span class="action-btn btn-green">审签</span></td>
                         <td>
-                            <span class="action-btn btn-green">审签</span>
-                        </td>
-                        <!-- 18. 操作2 -->
-                        <td>
-                            <a href="/transaction-detail/<%= tx.id %>" target="_blank" class="action-btn btn-teal" style="text-decoration:none;">☑ 详情</a>
+                            <div class="action-cell">
+                                <a href="/transaction-detail/<%= tx.id %>" target="_blank" class="action-btn btn-teal">☑ 详情</a>
+                            </div>
                         </td>
                     </tr>
                     <% }) %>
@@ -166,87 +152,191 @@
     </div>
 
     <script>
-        // Display Mandarin Date in footer
-        function updateMandarinDate() {
-            const now = new Date();
-            const y = now.getFullYear();
-            const m = String(now.getMonth() + 1).padStart(2, '0');
-            const d = String(now.getDate()).padStart(2, '0');
-            const mandarinDate = `${y}年${m}月${d}日`;
-            document.getElementById('mandarin-date-footer').innerText = mandarinDate;
+        let allHistoryData = [];
+        let currentHistoryPage = 1;
+        const historyRowsPerPage = 10;
+        let isHistoryRefreshing = false;
+
+        const historyTbody = document.getElementById('history-tbody');
+        const refreshHistoryBtn = document.getElementById('refresh-history');
+        const totalCountDisplay = document.getElementById('total-count-display');
+        const paginationContainer = document.querySelector('.pagination');
+        const workerSearch = document.getElementById('worker-search');
+
+        function fmtDate(d) {
+            if (!d) return '--';
+            const date = new Date(d);
+            const localTime = new Date(date.getTime() + (7 * 60 * 60 * 1000));
+            const iso = localTime.toISOString();
+            const ymd = iso.split('T')[0];
+            const time = iso.split('T')[1].substring(0, 8);
+            return { ymd, time };
         }
-        updateMandarinDate();
 
-        function filterByWorker() {
-            const query = document.getElementById('worker-search').value.toLowerCase().trim();
-            const rows = document.querySelectorAll('.tx-row');
-            let visibleCount = 0;
+        async function fetchHistory(shouldBlink = false) {
+            if (isHistoryRefreshing) return;
+            isHistoryRefreshing = true;
 
-            rows.forEach(row => {
-                const worker = row.getAttribute('data-worker').toLowerCase();
-                if (worker.includes(query)) {
-                    row.style.display = '';
-                    visibleCount++;
+            try {
+                const response = await fetch('/api/history');
+                const result = await response.json();
+
+                if (result.success) {
+                    allHistoryData = result.data;
+                    
+                    if (shouldBlink) {
+                        historyTbody.classList.remove('blink-data');
+                        void historyTbody.offsetWidth;
+                        historyTbody.classList.add('blink-data');
+                    }
+
+                    renderHistory();
+                }
+            } catch (err) {
+                console.error("Failed to fetch history:", err);
+            } finally {
+                setTimeout(() => {
+                    historyTbody.classList.remove('blink-data');
+                    isHistoryRefreshing = false;
+                }, 300);
+            }
+        }
+
+        function renderHistory() {
+            const query = workerSearch.value.toLowerCase().trim();
+            const filtered = allHistoryData.filter(tx => 
+                (tx.approvedBy || '').toLowerCase().includes(query)
+            );
+
+            totalCountDisplay.innerText = `共 ${filtered.length} 条`;
+
+            const totalPages = Math.ceil(filtered.length / historyRowsPerPage) || 1;
+            if (currentHistoryPage > totalPages) currentHistoryPage = totalPages;
+
+            const start = (currentHistoryPage - 1) * historyRowsPerPage;
+            const end = start + historyRowsPerPage;
+            const pageData = filtered.slice(start, end);
+
+            let html = '';
+            if (pageData.length === 0) {
+                html = '<tr><td colspan="18" style="text-align: center; padding: 40px; color: #999;">暂无数据</td></tr>';
+            } else {
+                pageData.forEach(tx => {
+                    const created = fmtDate(tx.created_at);
+                    const allow = fmtDate(tx.allow_transfer_time);
+                    html += `
+                        <tr class="tx-row" data-worker="${tx.approvedBy}">
+                            <td class="text-red">${tx.recharge_no}</td>
+                            <td>0931263463</td>
+                            <td><span class="badge blue">代付</span></td>
+                            <td>${Number(tx.amount).toLocaleString('vi-VN')}</td>
+                            <td>${tx.receiver_name}</td>
+                            <td>${tx.card_number}</td>
+                            <td>${tx.bank_name}</td>
+                            <td><span class="badge blue">取消跟单</span></td>
+                            <td><span class="badge blue">商户代理</span></td>
+                            <td><div style="line-height:1.2">${created.ymd}<br>${created.time}</div></td>
+                            <td>1分钟内</td>
+                            <td><div style="line-height:1.2">${created.ymd}<br>${created.time}</div></td>
+                            <td><div style="line-height:1.2">${(() => { const u = fmtDate(tx.updated_at); return u.ymd + '<br>' + u.time; })()}</div></td>
+                            <td class="worker-name">${tx.approvedBy}</td>
+                            <td><span class="badge green">0.5小时</span></td>
+                            <td><div style="line-height:1.2">${allow.ymd}<br>${allow.time}</div></td>
+                            <td><span class="action-btn btn-green">审签</span></td>
+                            <td><a href="/transaction-detail/${tx.id}" target="_blank" class="action-btn btn-teal" style="text-decoration:none;">☑ 详情</a></td>
+                        </tr>
+                    `;
+                });
+            }
+            historyTbody.innerHTML = html;
+            renderHistoryPagination(totalPages);
+        }
+
+        function renderHistoryPagination(totalPages) {
+            const container = paginationContainer;
+            container.innerHTML = '';
+            if (totalPages <= 0) return;
+
+            // Custom Helper for Creating Buttons
+            const createNavBtn = (content, targetPage, isActive = false, isDisabled = false) => {
+                const btn = document.createElement('button');
+                btn.className = `page-btn ${isActive ? 'active' : ''}`;
+                btn.innerHTML = content;
+                btn.disabled = isDisabled;
+                if (!isDisabled && !isActive) {
+                    btn.onclick = (e) => {
+                        e.preventDefault();
+                        currentHistoryPage = targetPage;
+                        renderHistory();
+                    };
+                }
+                return btn;
+            };
+
+            // 1. First Page
+            container.appendChild(createNavBtn('«', 1, false, currentHistoryPage === 1));
+
+            // 2. Previous Page
+            container.appendChild(createNavBtn('‹', currentHistoryPage - 1, false, currentHistoryPage === 1));
+
+            // 3. Page Numbers Logic
+            let pages = [];
+            if (totalPages <= 10) {
+                for (let i = 1; i <= totalPages; i++) pages.push(i);
+            } else {
+                if (currentHistoryPage <= 5) {
+                    pages = [1, 2, 3, 4, 5, 6, '...', totalPages];
+                } else if (currentHistoryPage >= totalPages - 4) {
+                    pages = [1, '...', totalPages - 5, totalPages - 4, totalPages - 3, totalPages - 2, totalPages - 1, totalPages];
                 } else {
-                    row.style.display = 'none';
+                    pages = [1, '...', currentHistoryPage - 2, currentHistoryPage - 1, currentHistoryPage, currentHistoryPage + 1, currentHistoryPage + 2, '...', totalPages];
+                }
+            }
+
+            pages.forEach(p => {
+                if (p === '...') {
+                    const span = document.createElement('span');
+                    span.style.color = '#999';
+                    span.style.padding = '4px';
+                    span.innerText = '...';
+                    container.appendChild(span);
+                } else {
+                    container.appendChild(createNavBtn(p, p, p === currentHistoryPage));
                 }
             });
 
-            document.getElementById('total-count-display').innerText = '共 ' + visibleCount + ' 条';
+            // 4. Next Page
+            container.appendChild(createNavBtn('›', currentHistoryPage + 1, false, currentHistoryPage === totalPages));
+
+            // 5. Last Page Button
+            container.appendChild(createNavBtn('»', totalPages, false, currentHistoryPage === totalPages));
+        }
+
+        function filterByWorker() {
+            currentHistoryPage = 1;
+            renderHistory();
         }
 
         function resetFilter() {
-            location.reload();
+            workerSearch.value = '';
+            currentHistoryPage = 1;
+            fetchHistory(true);
         }
 
-        // Allow Enter key to trigger search
-        document.getElementById('worker-search').addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                filterByWorker();
-            }
-        });
+        function updateMandarinDate() {
+            const now = new Date();
+            const mandarinDate = `${now.getFullYear()}年${String(now.getMonth() + 1).padStart(2, '0')}月${String(now.getDate()).padStart(2, '0')}日`;
+            document.getElementById('mandarin-date-footer').innerText = mandarinDate;
+        }
 
-        // Auto-refresh every 10 seconds
-        let autoRefreshTimer = setInterval(() => {
-            // Only auto-refresh if the search bar is empty
-            if (!document.getElementById('worker-search').value.trim()) {
-                location.reload();
-            }
-        }, 10000);
+        refreshHistoryBtn.onclick = () => fetchHistory(true);
+        workerSearch.onkeypress = (e) => { if (e.key === 'Enter') filterByWorker(); };
+
+        // Initial setup
+        updateMandarinDate();
+        // Since EJS already rendered the first batch, we can either use it or just fetch fresh
+        // Let's fetch fresh to ensure all JS logic is hooked up correctly
+        fetchHistory(false);
     </script>
-
-    <script>
-    // script pagination kamu taruh disini
-
-    const rowsPerPage = 10;
-    const rows = document.querySelectorAll(".tx-row");
-    const pageButtons = document.querySelectorAll(".page-btn");
-
-    function showPage(page) {
-        const start = (page - 1) * rowsPerPage;
-        const end = start + rowsPerPage;
-
-        rows.forEach((row, index) => {
-            if (index >= start && index < end) {
-                row.style.display = "";
-            } else {
-                row.style.display = "none";
-            }
-        });
-    }
-
-    pageButtons.forEach((btn, index) => {
-        btn.addEventListener("click", function(e) {
-            e.preventDefault();
-
-            pageButtons.forEach(b => b.classList.remove("active"));
-            btn.classList.add("active");
-
-            showPage(index + 1);
-        });
-    });
-
-    showPage(1);
-</script>
 </body>
 </html>

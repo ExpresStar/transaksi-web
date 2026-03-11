@@ -267,6 +267,9 @@ function createNewTransaction(specificTime = null) {
     allowDelays[Math.floor(Math.random() * allowDelays.length)];
   const allowTime = new Date(createdTime.getTime() + allowDelay * 1000);
 
+  const pollingDelayMinutes = 1 + Math.random() * 2; // 1-3 minutes
+  const pollingTime = new Date(createdTime.getTime() + pollingDelayMinutes * 60000);
+
   const newTx = {
     id: autoIncrementId++,
     order_no: generateRandomNumberString(18),
@@ -280,20 +283,22 @@ function createNewTransaction(specificTime = null) {
     status: "pending",
     admin_note: null,
     failureReason: null,
-    isCorrupted: Math.random() < 0.03,
+    isCorrupted: Math.random() < 0.005, // Lowered to 0.5% for general noise
     approvedBy: null,
     approvedAt: null,
+    updated_at: createdTime.toISOString(),
+    polling_at: pollingTime.toISOString(),
   };
 
   // Unshift adds to the beginning: currentQueue will be [newest, ..., oldest]
   globalQueue.unshift(newTx);
-  if (globalQueue.length > 5000) globalQueue.pop();
+  if (globalQueue.length > 10000) globalQueue.pop();
 }
 
 // 4. GENERATE BACKLOG (Going backwards from now)
-// Create 200 items in the past hour
+// Create 2000 items in the past hour
 let backlogCursorTime = Date.now();
-for (let i = 0; i < 200; i++) {
+for (let i = 0; i < 2000; i++) {
   const cursorDate = new Date(backlogCursorTime);
   const m = getTrafficMultiplier(cursorDate);
   const gap = (15000 + Math.random() * 20000) * m; // 15-35s gaps
@@ -308,15 +313,15 @@ function startLiveTraffic() {
   const rand = Math.random();
   let delay;
 
-  if (rand < 0.5) {
-    // 50% → cepat: 2–5 detik
-    delay = (Math.random() * 3 + 2) * 1000;
-  } else if (rand < 0.85) {
-    // 35% → sedang: 5–10 detik
-    delay = (Math.random() * 5 + 5) * 1000;
+  if (rand < 0.8) {
+    // 80% → instan: 0.1–0.8 detik
+    delay = (Math.random() * 0.7 + 0.1) * 1000;
+  } else if (rand < 0.95) {
+    // 15% → sangat cepat: 0.8–1.5 detik
+    delay = (Math.random() * 0.7 + 0.8) * 1000;
   } else {
-    // 15% → lambat: 10–15 detik
-    delay = (Math.random() * 5 + 10) * 1000;
+    // 5% → cepat: 1.5–3 detik
+    delay = (Math.random() * 1.5 + 1.5) * 1000;
   }
 
   setTimeout(() => {
@@ -349,12 +354,15 @@ setInterval(() => {
         if (Math.random() < 0.05) {
           // 5% → auto-rejected
           tx.status = "rejected";
+          tx.approvedBy = "System";
           tx.failureReason =
             failureReasons[Math.floor(Math.random() * failureReasons.length)];
         } else {
           // 95% → auto-approved
           tx.status = "approved";
+          tx.approvedBy = "System";
         }
+        tx.approvedAt = new Date().toISOString();
         tx.updated_at = new Date().toISOString();
       }
     }
@@ -378,12 +386,12 @@ function botTick(botId) {
     );
 
   if (readyTxs.length > 0) {
-    // MODERATE chance to snatch (more balanced)
-    if (Math.random() < 0.45) {
-      // Target OLDEST items (slice the first 8 items of the ASC list)
-      const oldestSubset = readyTxs.slice(0, 8);
+    // DYNAMIC chance to snatch (more presence)
+    if (Math.random() < 0.6) {
+      // Target oldest items (top 10)
+      const oldestSubset = readyTxs.slice(0, 10);
 
-      // Randomly select one from the top 8 oldest (which are displayed at the very top of the table)
+      // Randomly select one from the top 10 oldest
       const randomIndex = Math.floor(Math.random() * oldestSubset.length);
       const tx = oldestSubset[randomIndex];
 
@@ -394,9 +402,8 @@ function botTick(botId) {
     }
   }
 
-  // Randomize next tick to simulate moderate user speeds:
-  // (3 to 7 seconds) - Balanced
-  const nextDelay = Math.random() * 4000 + 3000;
+  // Dynamic delay: 1 to 5 seconds (Reduced by ~2s)
+  const nextDelay = Math.random() * 4000 + 1000;
 
   setTimeout(() => botTick(botId), nextDelay);
 }
@@ -409,6 +416,29 @@ for (let i = 0; i < 4; i++) {
 }
 
 /* =========================================================
+   2d. ANOMALY ENGINE: 5-15 MINUTE ERRORS
+   Intentionally corrupts data every 5-15 minutes
+   ========================================================= */
+function scheduleNextAnomaly() {
+  const minMinutes = 5;
+  const maxMinutes = 15;
+  const delay = (minMinutes + Math.random() * (maxMinutes - minMinutes)) * 60000;
+
+  setTimeout(() => {
+    const pending = globalQueue.filter((tx) => tx.status === "pending");
+    if (pending.length > 0) {
+      // Pick a random pending transaction to corrupt
+      const randomIndex = Math.floor(Math.random() * pending.length);
+      const tx = pending[randomIndex];
+      tx.isCorrupted = true;
+      console.log(`[Anomaly Engine] Corrupted Transaction ID: ${tx.id}`);
+    }
+    scheduleNextAnomaly(); // Schedule the next one
+  }, delay);
+}
+scheduleNextAnomaly();
+
+/* =========================================================
    3. API ENDPOINTS
    ========================================================= */
 
@@ -417,7 +447,7 @@ app.get("/transactions", (req, res) => {
   const filtered = globalQueue
     .filter((tx) => tx.status === "pending")
     .sort((a, b) => new Date(a.created_at) - new Date(b.created_at))
-    .slice(0, 10); // hanya 10 data
+    .slice(0, 1000); // ditingkatkan jadi 1000 data agar user bisa scroll banyak
 
   res.json({ success: true, data: filtered });
 });
@@ -446,12 +476,12 @@ app.post("/transactions/:id/approve", (req, res) => {
       .json({ success: false, message: "Transaction not found." });
   }
 
-  // Race condition: already approved by someone else
-  if (tx.approvedBy) {
+  // Race condition: already approved or rejected
+  if (tx.status !== "pending") {
     return res.json({
       success: false,
       alreadyTaken: true,
-      takenBy: tx.approvedBy,
+      takenBy: tx.approvedBy || "System",
       message: "此订单已被处理",
     });
   }
@@ -476,11 +506,11 @@ app.post("/transactions/:id/reject", (req, res) => {
       .status(404)
       .json({ success: false, message: "Transaction not found." });
   }
-  if (tx.approvedBy) {
+  if (tx.status !== "pending") {
     return res.json({
       success: false,
       alreadyTaken: true,
-      takenBy: tx.approvedBy,
+      takenBy: tx.approvedBy || "System",
       message: "此订单已被处理",
     });
   }
@@ -496,9 +526,8 @@ app.post("/transactions/:id/reject", (req, res) => {
    4b. APPROVAL HISTORY ROUTES
    ========================================================= */
 
-// GET /approval-history
-app.get("/approval-history", (req, res) => {
-  // Get all approved transactions, sorted newest first
+// GET /runner-approved-history
+app.get("/runner-approved-history", (req, res) => {
   const approved = globalQueue
     .filter((tx) => tx.approvedBy)
     .sort((a, b) => new Date(b.approvedAt) - new Date(a.approvedAt));
@@ -509,8 +538,16 @@ app.get("/approval-history", (req, res) => {
   });
 });
 
-// GET /approval-history/:username — per-user transaction list
-app.get("/approval-history/:username", (req, res) => {
+// JSON endpoint for History
+app.get("/api/history", (req, res) => {
+  const approved = globalQueue
+    .filter((tx) => tx.approvedBy)
+    .sort((a, b) => new Date(b.approvedAt) - new Date(a.approvedAt));
+  res.json({ success: true, data: approved });
+});
+
+// GET /runner-approved-history/:username — per-user transaction list
+app.get("/runner-approved-history/:username", (req, res) => {
   const { username } = req.params;
   const userTx = globalQueue
     .filter((tx) => tx.approvedBy === username)
@@ -520,6 +557,15 @@ app.get("/approval-history/:username", (req, res) => {
     transactions: userTx,
     total: userTx.length,
   });
+});
+
+// JSON endpoint for User History
+app.get("/api/history/:username", (req, res) => {
+  const { username } = req.params;
+  const userTx = globalQueue
+    .filter((tx) => tx.approvedBy === username)
+    .sort((a, b) => new Date(b.approvedAt) - new Date(a.approvedAt));
+  res.json({ success: true, data: userTx });
 });
 
 /* =========================================================
@@ -533,19 +579,28 @@ app.get("/approval-history/:username", (req, res) => {
  */
 function mutateTransactionData(tx) {
   const clone = { ...tx }; // shallow copy — never mutate the queue
-  const anomalyType = Math.floor(Math.random() * 4);
+  const anomalyType = Math.floor(Math.random() * 5); // Increased variety
   switch (anomalyType) {
     case 0:
-      clone.bank_name = "UNKNOWN BANK";
+      // Mismatched Bank Name
+      const otherBanks = banks.filter((b) => b !== tx.bank_name);
+      clone.bank_name = otherBanks[Math.floor(Math.random() * otherBanks.length)];
       break;
     case 1:
-      clone.amount += 100000000;
+      // Extreme Amount Error (10x higher or lower)
+      clone.amount = Math.random() > 0.5 ? tx.amount * 10 : tx.amount / 10;
       break;
     case 2:
-      clone.receiver_name = "SYSTEM ERROR USER";
+      // Receiver Name Error (System placeholder or different Vietnamese name)
+      clone.receiver_name = "ERROR: NAME MAPPING FAILED";
       break;
     case 3:
-      clone.bank_name = "GLOBAL FINANCE LTD";
+      // Subtle Amount Error (Random extra digits)
+      clone.amount += 12345000;
+      break;
+    case 4:
+      // Mismatched Order Number
+      clone.order_no = "ERR_" + generateRandomNumberString(14);
       break;
   }
   return clone;

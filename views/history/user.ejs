@@ -3,10 +3,12 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title><%= username %> 的审批记录</title>
+  <title>RUNNER - <%= username %> 的审批记录</title>
+  <link rel="icon" type="image/svg+xml" href="/logo.svg">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { font-family: 'Segoe UI', Arial, sans-serif; background: #f4f6f9; min-height: 100vh; font-size: 13px; }
+    body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #f4f6f9; min-height: 100vh; font-size: 13px; }
     .topbar { background: #1a3c6e; padding: 14px 24px; display: flex; align-items: center; gap: 16px; }
     .topbar a { color: #adc8f0; text-decoration: none; font-size: 13px; }
     .topbar-title { color: #fff; font-size: 16px; font-weight: 700; flex: 1; }
@@ -29,24 +31,44 @@
     .mono { font-family: monospace; font-size: 11px; color: #888; }
     .footer { padding: 16px 24px; background: #fff; margin-top: 1px; border-radius: 0 0 10px 10px; display: flex; justify-content: space-between; align-items: center; color: #888; font-size: 12px; }
     .empty { text-align: center; padding: 60px; color: #bbb; }
+    .action-btn { font-size: 11px; padding: 4px 12px; background: #409eff; color: #fff; border-radius: 4px; font-weight: 600; text-decoration: none; display: inline-flex; align-items: center; justify-content: center; min-width: 90px; white-space: nowrap; border: none; cursor: pointer; }
+    .action-cell { display: flex; justify-content: center; align-items: center; }
+    @keyframes blink-content {
+      0% { opacity: 1; }
+      50% { opacity: 0; }
+      100% { opacity: 1; }
+    }
+    .blink-data td {
+      animation: blink-content 0.3s ease-in-out;
+      animation-iteration-count: 1;
+    }
+    .refresh-btn { 
+      background: rgba(255,255,255,0.1); 
+      border: 1px solid rgba(255,255,255,0.2); 
+      color: #fff; 
+      padding: 4px 12px; 
+      border-radius: 4px; 
+      cursor: pointer; 
+      font-size: 12px;
+      transition: all 0.2s;
+    }
+    .refresh-btn:hover { background: rgba(255,255,255,0.2); }
+    .pagination { display: flex; justify-content: center; gap: 5px; margin-top: 15px; }
+    .page-btn { height: 28px; min-width: 28px; padding: 0 4px; background: #f4f4f5; border: none; border-radius: 2px; color: #606266; font-size: 13px; cursor: pointer; display: flex; align-items: center; justify-content: center; margin: 0 2px; outline: none; }
+    .page-btn.active { background: #409eff; color: #fff; }
+    .page-btn:disabled { color: #c0c4cc; cursor: not-allowed; background: #f4f4f5; }
+    .page-btn:hover:not(:disabled):not(.active) { color: #409eff; }
   </style>
 </head>
 <body>
   <div class="topbar">
-    <a href="/approval-history">← 排行榜</a>
+    <a href="/runner-approved-history">← 排行榜</a>
     <span class="topbar-title"><%= username %> 的审批记录</span>
+    <button class="refresh-btn" id="user-refresh-btn">↻ 刷新数据</button>
     <a href="/">主页</a>
   </div>
 
   <div class="container">
-    <div class="summary">
-      <div>
-        <div class="summary-user">👤 <%= username %></div>
-        <div class="summary-count">共处理 <%= total %> 笔订单</div>
-      </div>
-      <span class="badge-count"><%= total %> 笔</span>
-    </div>
-
     <% if (transactions.length === 0) { %>
       <div style="background:#fff;border-radius:10px;padding:60px;text-align:center;color:#bbb;">
         暂无审批记录
@@ -63,11 +85,12 @@
           <th>银行</th>
           <th>金额</th>
           <th>状态</th>
+          <th>创建时间</th>
           <th>审批时间</th>
           <th>操作</th>
         </tr>
       </thead>
-      <tbody>
+      <tbody id="user-history-tbody">
         <% transactions.forEach((tx, i) => {
           var d = new Date(tx.approvedAt);
           var hh = String(d.getHours()).padStart(2,'0');
@@ -86,6 +109,13 @@
           <td><%= tx.bank_name %></td>
           <td class="red"><%= Number(tx.amount).toLocaleString('vi-VN') %> VND</td>
           <td><span class="badge badge-green">已同意</span></td>
+          <td style="color:#999; font-size:11px;">
+            <% 
+              var cd = new Date(tx.created_at);
+              var c_dateStr = cd.getFullYear() + '-' + String(cd.getMonth()+1).padStart(2,'0') + '-' + String(cd.getDate()).padStart(2,'0') + ' ' + String(cd.getHours()).padStart(2,'0') + ':' + String(cd.getMinutes()).padStart(2,'0') + ':' + String(cd.getSeconds()).padStart(2,'0');
+            %>
+            <%= c_dateStr %>
+          </td>
           <td>
             <%= yy %>-<%= mm %>-<%= dd %> <%= hh %>:<%= mi %>:<%= ss %>
             <span style="margin-left:8px; display:inline-block; padding:2px 6px; background:#ecf5ff; color:#409eff; border-radius:4px; font-size:11px; font-weight:bold;">
@@ -93,21 +123,127 @@
             </span>
           </td>
           <td>
-            <a href="/transaction-detail/<%= tx.id %>" target="_blank"
-               style="display:inline-block;padding:4px 12px;background:#409eff;color:#fff;
-                      border-radius:4px;font-size:12px;font-weight:600;text-decoration:none;">
-              📄 查看凭证
-            </a>
+            <div class="action-cell">
+              <a href="/transaction-detail/<%= tx.id %>" target="_blank" class="action-btn">
+                📄 查看凭证
+              </a>
+            </div>
           </td>
         </tr>
         <% }) %>
       </tbody>
     </table>
     <div class="footer">
-      <span>共 <%= total %> 条</span>
-      <span><a href="/approval-history" style="color:#409eff;text-decoration:none;">← 返回排行榜</a></span>
+      <span>共 <span id="user-footer-count"><%= total %></span> 条</span>
+      <div class="pagination" id="user-pagination"></div>
+      <span><a href="/runner-approved-history" style="color:#409eff;text-decoration:none;">← 返回排行榜</a></span>
     </div>
     <% } %>
   </div>
+
+  <script>
+    const username = "<%= username %>";
+    const refreshBtn = document.getElementById('user-refresh-btn');
+    const totalCountText = document.getElementById('user-total-count');
+    const badgeCountText = document.getElementById('user-badge-count');
+    const footerCountText = document.getElementById('user-footer-count');
+    const tableWrapper = document.getElementById('user-table-wrapper');
+    let isRefreshing = false;
+
+    async function fetchUserHistory(shouldBlink = false) {
+      if (isRefreshing) return;
+      isRefreshing = true;
+
+      try {
+        const response = await fetch(`/api/history/${username}`);
+        const result = await response.json();
+
+        if (result.success) {
+          const data = result.data;
+          
+          const userTbody = document.getElementById('user-history-tbody');
+          if (shouldBlink && userTbody) {
+            userTbody.classList.remove('blink-data');
+            void userTbody.offsetWidth;
+            userTbody.classList.add('blink-data');
+          }
+
+          renderUserTable(data);
+        }
+      } catch (err) {
+        console.error("Fetch failed:", err);
+      } finally {
+        setTimeout(() => {
+          const userTbody = document.getElementById('user-history-tbody');
+          if(userTbody) userTbody.classList.remove('blink-data');
+          isRefreshing = false;
+        }, 300);
+      }
+    }
+
+    function renderUserTable(data) {
+      totalCountText.innerText = data.length;
+      badgeCountText.innerText = `${data.length} 笔`;
+      if(footerCountText) footerCountText.innerText = data.length;
+
+      if (data.length === 0) {
+        tableWrapper.innerHTML = `<div style="background:#fff;border-radius:10px;padding:60px;text-align:center;color:#bbb;">暂无审批记录</div>`;
+        return;
+      }
+
+      let html = '';
+      data.forEach((tx, i) => {
+        const d = new Date(tx.approvedAt);
+        const hh = String(d.getHours()).padStart(2,'0');
+        const mi = String(d.getMinutes()).padStart(2,'0');
+        const ss = String(d.getSeconds()).padStart(2,'0');
+        const d_d = String(d.getDate()).padStart(2,'0');
+        const m_m = String(d.getMonth()+1).padStart(2,'0');
+        const yy = d.getFullYear();
+        const dateStr = `${yy}-${m_m}-${d_d} ${hh}:${mi}:${ss}`;
+
+        html += `
+          <tr>
+            <td>${i+1}</td>
+            <td class="mono">${tx.order_no}</td>
+            <td class="mono">${tx.recharge_no}</td>
+            <td>${tx.receiver_name}</td>
+            <td class="mono">${tx.card_number}</td>
+            <td>${tx.bank_name}</td>
+            <td class="red">${Number(tx.amount).toLocaleString('vi-VN')} VND</td>
+            <td><span class="badge badge-green">已同意</span></td>
+            <td style="color:#999; font-size:11px;">
+              ${(() => {
+                const cd = new Date(tx.created_at);
+                return `${cd.getFullYear()}-${String(cd.getMonth()+1).padStart(2,'0')}-${String(cd.getDate()).padStart(2,'0')} ${String(cd.getHours()).padStart(2,'0')}:${String(cd.getMinutes()).padStart(2,'0')}:${String(cd.getSeconds()).padStart(2,'0')}`;
+              })()}
+            </td>
+            <td>
+              ${dateStr}
+              <span style="margin-left:8px; display:inline-block; padding:2px 6px; background:#ecf5ff; color:#409eff; border-radius:4px; font-size:11px; font-weight:bold;">
+                @${tx.approvedBy}
+              </span>
+            </td>
+            <td>
+              <div class="action-cell">
+                <a href="/transaction-detail/${tx.id}" target="_blank" class="action-btn">
+                  📄 查看凭证
+                </a>
+              </div>
+            </td>
+          </tr>
+        `;
+      });
+
+      const userTbody = document.getElementById('user-history-tbody');
+      if (userTbody) {
+        userTbody.innerHTML = html;
+      } else {
+        location.reload();
+      }
+    }
+
+    refreshBtn.onclick = () => fetchUserHistory(true);
+  </script>
 </body>
 </html>

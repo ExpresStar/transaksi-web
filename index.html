@@ -3,20 +3,39 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>runner</title>
+    <title>RUNNER</title>
+    <link rel="icon" type="image/svg+xml" href="/logo.svg">
     <link rel="stylesheet" href="login.css" />
     <!-- Use Font Awesome for icons similar to the screenshot -->
     <link
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
     <style>
-      /* Specific page overrides if necessary */
+      .login-header {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 15px;
+        font-weight: 800;
+        letter-spacing: 2px;
+        font-family: 'Inter', sans-serif;
+      }
+      .login-logo {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        object-fit: cover;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+      }
     </style>
   </head>
   <body>
     <div class="login-wrapper">
       <div class="login-card">
-        <div class="login-header">runner</div>
+        <div class="login-header">
+          <img src="/logo.svg" alt="RUNNER Logo" class="login-logo">
+          RUNNER
+        </div>
         <form id="loginForm" class="login-form">
           <div class="input-group">
             <span class="input-icon"><i class="fa-solid fa-user"></i></span>

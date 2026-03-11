@@ -1,17 +1,24 @@
 // --- Sidebar Navigation Logic ---
+let isPaymentTabOpen = false;
+
 function toggleSubMenu(menuId, el) {
     const subMenu = document.getElementById(menuId);
     if (!subMenu) return;
-    if (subMenu.style.display === 'none') {
-        subMenu.style.display = 'block';
-        el.querySelector('.arrow').innerText = 'v';
-    } else {
-        subMenu.style.display = 'none';
-        el.querySelector('.arrow').innerText = '<';
+    
+    const isOpen = subMenu.classList.toggle('is-open');
+    el.querySelector('.arrow').innerText = isOpen ? 'v' : '<';
+    
+    // Rotate arrow icon smoothly
+    const arrow = el.querySelector('.arrow');
+    if (arrow) {
+        arrow.style.transform = isOpen ? 'rotate(0deg)' : 'rotate(0deg)';
+        // (Rotation handled by CSS class transitions alternatively)
     }
 }
 
 function switchView(viewId, navId) {
+    if (viewId === 'paymentView') isPaymentTabOpen = true;
+
     const homeView = document.getElementById('homeView');
     const paymentView = document.getElementById('paymentView');
     if (homeView) homeView.style.display = 'none';
@@ -30,17 +37,31 @@ function switchView(viewId, navId) {
     
     const tagsContainer = document.querySelector('.tags-left');
     if (tagsContainer) {
-        tagsContainer.innerHTML = `
+        let tagsHtml = `
             <span class="nav-arrow">«</span>
-            <span class="tag-item" onclick="switchView('homeView', 'nav-home')">首页</span>
-            ${viewId === 'paymentView' ? '<span class="tag-item active">交易列表 <span class="tag-close" onclick="switchView(&apos;homeView&apos;, &apos;nav-home&apos;)">×</span></span>' : ''}
+            <span class="tag-item ${viewId === 'homeView' ? 'active' : ''}" onclick="switchView('homeView', 'nav-home')">首页</span>
         `;
+        
+        if (isPaymentTabOpen) {
+            tagsHtml += `
+                <span class="tag-item ${viewId === 'paymentView' ? 'active' : ''}" onclick="switchView('paymentView', 'nav-payment')">
+                    交易列表 <span class="tag-close" onclick="event.stopPropagation(); closePaymentTab();">×</span>
+                </span>
+            `;
+        }
+        tagsContainer.innerHTML = tagsHtml;
     }
+}
+
+function closePaymentTab() {
+    isPaymentTabOpen = false;
+    switchView('homeView', 'nav-home');
 }
 
 // Make functions globally available
 window.switchView = switchView;
 window.toggleSubMenu = toggleSubMenu;
+window.closePaymentTab = closePaymentTab;
 // --------------------------------
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -64,6 +85,34 @@ document.addEventListener('DOMContentLoaded', () => {
     // Default view setting
     switchView('homeView', 'nav-home');
     
+    // Fullscreen toggle logic
+    const btnFullScreen = document.getElementById('btnFullScreen');
+    if (btnFullScreen) {
+        btnFullScreen.addEventListener('click', () => {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen().catch(err => {
+                    console.error(`Error attempting to enable full-screen mode: ${err.message}`);
+                });
+            } else {
+                if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                }
+            }
+        });
+    }
+
+    // Logout logic
+    const btnLogout = document.getElementById('btnLogout');
+    if (btnLogout) {
+        btnLogout.addEventListener('click', () => {
+            if (confirm('确认退出系统吗？')) {
+                localStorage.removeItem('runner_logged_in');
+                localStorage.removeItem('approver_username');
+                window.location.href = '/';
+            }
+        });
+    }
+
     // Hamburger menu toggle
     const hamburgerBtn = document.querySelector('.hamburger');
     const sidebar = document.getElementById('sidebar');
@@ -84,40 +133,100 @@ document.addEventListener('DOMContentLoaded', () => {
 
         <!-- Universal Action Modal -->
         <div id="action-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 9998; align-items: center; justify-content: center;">
-            <div style="background: #fff; width: 400px; border-radius: 4px; box-shadow: 0 1px 3px rgba(0,0,0,0.3); overflow: hidden;">
-                <div style="padding: 15px; border-bottom: 1px solid #ebeef5; display: flex; justify-content: space-between; align-items: center;">
-                    <span id="modal-title" style="font-size: 16px; font-weight: bold; color: #303133;">Processing</span>
-                    <span style="cursor: pointer; color: #909399;" onclick="closeModal()">✖</span>
+            <div style="background: #fff; width: 420px; border-radius: 8px; box-shadow: 0 4px 16px rgba(0,0,0,0.15); overflow: hidden; animation: zoomIn 0.2s ease-out;">
+                <div style="padding: 15px 20px; border-bottom: 1px solid #f0f0f0; display: flex; justify-content: space-between; align-items: center;">
+                    <span id="modal-title" style="font-size: 18px; font-weight: bold; color: #e6a23c;">(同意)</span>
+                    <span style="cursor: pointer; color: #909399; font-size: 20px;" onclick="closeModal()">×</span>
                 </div>
                 <div style="padding: 20px;">
-                    <textarea id="admin-note" rows="5" placeholder="" style="width: 100%; border: 1px solid #dcdfe6; border-radius: 4px; padding: 10px; font-size: 13px; outline: none; resize: none;"></textarea>
+                    <textarea id="admin-note" rows="5" placeholder="" style="width: 100%; border: 1px solid #dcdfe6; border-radius: 4px; padding: 12px; font-size: 14px; outline: none; resize: none; color: #606266;"></textarea>
+                    
+                    <!-- Result Area for Verification -->
+                    <div id="verify-result" style="display:none; margin-top: 15px; padding: 10px; border-radius: 4px; text-align: center; font-weight: bold; font-size: 16px;"></div>
                 </div>
-                <div style="padding: 10px 20px 20px; text-align: right;">
-                    <button type="button" class="btn btn-blue" id="btn-submit-modal" disabled>通过</button>
+                <div style="padding: 0 20px 20px; text-align: right;">
+                    <button type="button" id="btn-submit-modal" class="btn-modal" disabled>通过</button>
                 </div>
             </div>
         </div>
         
         <style>
-            .btn-yellow { background: #e6a23c; color: #fff; } /* using typical element-ui warning color */
-            .btn-blue { background: #409eff; color: #fff; }
-            .btn-yellow:disabled { background: #f3d19e; cursor: not-allowed; }
-            .btn-submit-disabled { opacity: 0.5; cursor: not-allowed; }
+            @keyframes zoomIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+            
+            .btn-modal {
+                padding: 10px 28px;
+                border-radius: 6px;
+                font-weight: 600;
+                font-size: 14px;
+                cursor: pointer;
+                transition: all 0.2s;
+                border: 1px solid transparent;
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                min-width: 100px;
+            }
+
+            /* Approve/General Style */
+            .btn-modal.type-approve {
+                background: #F4c530;
+                border-color: #F4c530;
+                color: #fff;
+            }
+            .btn-modal.type-approve:hover:not(:disabled) {
+                background: #e0b42b;
+                border-color: #e0b42b;
+                color: #fff;
+            }
+
+            /* Reject Style */
+            .btn-modal.type-reject {
+                background: #fef0f0;
+                border-color: #fbc4c4;
+                color: #f56c6c;
+            }
+            .btn-modal.type-reject:hover:not(:disabled) {
+                background: #f56c6c;
+                color: #fff;
+            }
+
+            /* Blue/Normal Style */
+            .btn-modal.type-blue {
+                background: #ecf5ff;
+                border-color: #d9ecff;
+                color: #409eff;
+            }
+            .btn-modal.type-blue:hover:not(:disabled) {
+                background: #409eff;
+                color: #fff;
+            }
+
+            .btn-submit-disabled { 
+                opacity: 0.5; 
+                cursor: not-allowed !important; 
+                filter: grayscale(0.5);
+            }
             .badge-timeago {
                 display: inline-block;
-                margin-top: 3px;
-                padding: 1px 6px;
+                margin-top: 1px;
+                padding: 0px 4px;
                 background: #f0f9eb;
                 color: #67c23a;
                 border: 1px solid #c2e7b0;
                 border-radius: 10px;
-                font-size: 11px;
+                font-size: 10px;
                 font-weight: 600;
                 white-space: nowrap;
             }
         </style>
     `;
     document.body.insertAdjacentHTML('beforeend', modalHTML);
+
+    // Modal Elements (Define right after injection)
+    const modal = document.getElementById('action-modal');
+    const modalTitle = document.getElementById('modal-title');
+    const adminNote = document.getElementById('admin-note');
+    const btnSubmitModal = document.getElementById('btn-submit-modal');
 
     /* =========================================================
        USERNAME SYSTEM — stored in localStorage, prompted once
@@ -223,25 +332,32 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Initial State Variables
     let currentMode = '';
-    let currentPage = 1;
-    let itemsPerPage = 10;
     let allData = [];
-    let totalTransactions = 0; // 'approve' or 'reject'
+    let itemsPerPage = 10;
+    let currentPage = 1;
+    let totalTransactions = 0;
     let currentTransactionId = null;
+    let isRefreshing = false;
+
+    // Filter State
+    let currentFilters = {
+        rechargeNo: '',
+        downstreamNo: '',
+        receiver: '',
+        cardNo: '',
+        minAmount: '',
+        maxAmount: '',
+        status: '',
+        dateRange: null // { start, end }
+    };
 
     // Elements
     const tbody = document.querySelector('.data-table tbody');
     const refreshBtn = document.querySelector('.table-toolbar .toolbar-btn:nth-child(2)'); // The ↻ button
     const loadingOverlay = document.getElementById('loading-overlay');
     
-    // Modal Elements
-    const modal = document.getElementById('action-modal');
-    const modalTitle = document.getElementById('modal-title');
-    const adminNote = document.getElementById('admin-note');
-    const btnSubmitModal = document.getElementById('btn-submit-modal');
-
     // 2. Fetch and Render Transactions
-    const fetchTransactions = async () => {
+    const fetchTransactions = async (shouldRender = true) => { // Added shouldRender parameter
         try {
             const response = await fetch('/transactions');
             const result = await response.json();
@@ -259,9 +375,25 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (currentPage > totalPages) currentPage = totalPages;
 
                 renderPagination(currentPage, totalPages);
-                renderTable(); // render langsung dari allData global
+                
+                // Only render table if shouldRender is true
+                if (shouldRender) {
+                    renderTable();
+                }
+
+                // --- Race Condition Check while Modal is Open ---
+                if (currentMode && currentTransactionId) {
+                    const isStillPending = allData.some(tx => Number(tx.id) === Number(currentTransactionId));
+                    if (!isStillPending) {
+                        closeModal();
+                        showFailedToast(); // Show general "Already processed" toast
+                        
+                        // Force a table render so the "taken" row disappears immediately
+                        renderTable();
+                    }
+                }
             } else {
-                alert('Failed to load data: ' + result.message);
+                console.warn('Failed to fetch transactions'); // Changed alert to console.warn
             }
         } catch (error) {
             console.error('Error fetching transactions:', error);
@@ -271,18 +403,42 @@ document.addEventListener('DOMContentLoaded', () => {
     const renderPagination = (page, totalPages) => {
         const container = document.getElementById('pagination-container');
         container.innerHTML = '';
-        if (totalPages === 0) return;
+        if (totalPages <= 0) return;
 
+        // Custom Helper for Creating Buttons
+        const createNavBtn = (content, targetPage, isActive = false, isDisabled = false) => {
+            const btn = document.createElement('button');
+            btn.className = `pagination-btn ${isActive ? 'active' : ''}`;
+            btn.innerHTML = content;
+            btn.disabled = isDisabled;
+            if (!isDisabled && !isActive) {
+                btn.onclick = () => {
+                    renderTablePage(targetPage);
+                };
+            }
+            return btn;
+        };
+
+        // 1. First Page Button (Back to page 1)
+        container.appendChild(createNavBtn('«', 1, false, page === 1));
+
+        // 2. Previous Page
+        container.appendChild(createNavBtn('‹', page - 1, false, page === 1));
+
+        // 3. Page Numbers Logic
         let pages = [];
-        if (totalPages <= 7) {
+        if (totalPages <= 10) {
             for (let i = 1; i <= totalPages; i++) pages.push(i);
         } else {
-            if (page <= 4) {
-                pages = [1, 2, 3, 4, 5, '...', totalPages];
-            } else if (page >= totalPages - 3) {
-                pages = [1, '...', totalPages - 4, totalPages - 3, totalPages - 2, totalPages - 1, totalPages];
+            if (page <= 5) {
+                // Near start
+                pages = [1, 2, 3, 4, 5, 6, '...', totalPages];
+            } else if (page >= totalPages - 4) {
+                // Near end
+                pages = [1, '...', totalPages - 5, totalPages - 4, totalPages - 3, totalPages - 2, totalPages - 1, totalPages];
             } else {
-                pages = [1, '...', page - 1, page, page + 1, '...', totalPages];
+                // In middle - more numbers around current
+                pages = [1, '...', page - 2, page - 1, page, page + 1, page + 2, '...', totalPages];
             }
         }
 
@@ -293,17 +449,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 span.innerText = '...';
                 container.appendChild(span);
             } else {
-                const btn = document.createElement('button');
-                btn.className = `pagination-btn ${p === page ? 'active' : ''}`;
-                btn.innerText = p;
-                btn.onclick = () => {
-                    currentPage = p;
-                    renderTablePage(currentPage);
-                    renderPagination(currentPage, totalPages);
-                };
-                container.appendChild(btn);
+                container.appendChild(createNavBtn(p, p, p === page));
             }
         });
+
+        // 4. Next Page
+        container.appendChild(createNavBtn('›', page + 1, false, page === totalPages));
+
+        // 5. Last Page Button
+        container.appendChild(createNavBtn('»', totalPages, false, page === totalPages));
     };
 
     const renderTablePage = (page) => {
@@ -312,123 +466,152 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     const renderTable = () => {
-        // Selalu baca dari allData global yang sudah tersorted
-        // Tidak ada parameter subarray — tidak ada risiko urutan berbeda
+        // Apply filters to allData to get displayData
+        let displayData = allData.filter(row => {
+            // Recharge No
+            if (currentFilters.rechargeNo && !row.recharge_no.includes(currentFilters.rechargeNo)) return false;
+            // Downstream No
+            if (currentFilters.downstreamNo && !row.order_no.includes(currentFilters.downstreamNo)) return false;
+            // Receiver
+            if (currentFilters.receiver && !row.receiver_name.toLowerCase().includes(currentFilters.receiver.toLowerCase())) return false;
+            // Card No
+            if (currentFilters.cardNo && !row.card_number.includes(currentFilters.cardNo)) return false;
+            // Status
+            if (currentFilters.status && row.status !== currentFilters.status) return false;
+            
+            // Amount Range
+            const amount = Number(row.amount);
+            if (currentFilters.minAmount && amount < Number(currentFilters.minAmount)) return false;
+            if (currentFilters.maxAmount && amount > Number(currentFilters.maxAmount)) return false;
+
+            // Processor (Admin)
+            if (currentFilters.processor && !((row.approvedBy || '').toLowerCase().includes(currentFilters.processor.toLowerCase()))) return false;
+
+            // Date Range
+            if (currentFilters.dateRange) {
+                const rowDate = new Date(row.created_at);
+                if (rowDate < currentFilters.dateRange.start || rowDate > currentFilters.dateRange.end) return false;
+            }
+
+            return true;
+        });
+
+        totalTransactions = displayData.length;
+        document.getElementById('total-tx').innerText = totalTransactions;
+
+        const totalPages = Math.ceil(totalTransactions / itemsPerPage) || 1;
+        if (currentPage > totalPages) currentPage = totalPages;
+        renderPagination(currentPage, totalPages);
+
         const start = (currentPage - 1) * itemsPerPage;
         const end   = start + itemsPerPage;
-        const pageData = allData.slice(start, end); // slice dari array yang SUDAH sorted
-        // Save current scroll position from the actual scrolling container
+        const pageData = displayData.slice(start, end);
+        
         const appMain = document.querySelector('.app-main');
         const currentScroll = appMain ? appMain.scrollTop : window.scrollY;
         
-        tbody.innerHTML = ''; // Clear static HTML
-        
+        let html = '';
         pageData.forEach(row => {
-            const tr = document.createElement('tr');
-            
-            // Format dates using formatTime — never uses new Date() to regenerate
             const createdHtml = formatTime(row.created_at);
             const timeAgo = getTimeAgo(row.created_at);
             const allowHtml = formatTime(row.allow_transfer_time);
 
-            // Determine status badge
             let statusBadge = '';
             let isPending = row.status === 'pending';
             let isApprovedLocally = row.status === 'approved';
             
             if (isPending) {
-                statusBadge = '<span class="badge orange-outline">提现中 (Pending)</span>';
+                statusBadge = '<span class="badge orange-outline">提现中</span>';
             } else if (isApprovedLocally) {
-                // Show who took it in a gray badge
                 const taker = row.approvedBy === currentUsername ? '您' : row.approvedBy;
                 statusBadge = `<span class="badge" style="background: #f4f4f5; color: #909399; border: 1px solid #d3d4d6;">已同意 - @${taker}</span>`;
             } else if (row.status === 'rejected') {
-                statusBadge = '<span class="badge btn-red" style="border:none;">已作废 (Rejected)</span>';
+                statusBadge = '<span class="badge btn-red" style="border:none;">已作废</span>';
             }
 
-            tr.innerHTML = `
-                <td><input type="checkbox" ${!isPending ? 'disabled' : ''}></td>
-                <td style="${!isPending ? 'color:#999;' : ''}">${row.order_no}</td>
-                <td class="text-red" style="${!isPending ? 'color:#999;' : ''}">${row.recharge_no}</td>
-                <td style="${!isPending ? 'color:#999;' : ''}">0961427367</td> <!-- Dummy Data -->
-                <td><span class="badge blue" style="${!isPending ? 'opacity:0.5;' : ''}">代付</span></td>
-                <td style="${!isPending ? 'color:#999;' : ''}">${Number(row.amount).toLocaleString('vi-VN')} VND</td>
-                <td style="${!isPending ? 'color:#999;' : ''}">${row.receiver_name}</td>
-                <td style="${!isPending ? 'color:#999;' : ''}">${row.card_number}</td>
-                <td style="${!isPending ? 'color:#999;' : ''}">${row.bank_name}</td>
-                <td>${statusBadge}</td>
-                <td><span class="badge blue" style="${!isPending ? 'opacity:0.5;' : ''}">商户代付</span></td>
-                <td style="${!isPending ? 'color:#999;' : ''}">
-                    ${createdHtml}
-                    <br><span class="badge-timeago" style="${!isPending ? 'color:#999; background:transparent; border:none;' : ''}">${timeAgo}</span>
-                </td>
-                <td style="${!isPending ? 'color:#999;' : ''}">--</td> <!-- Modified time placeholder -->
-                <td style="${!isPending ? 'color:#999;' : ''}">--</td>
-                <td><span class="badge green" style="${!isPending ? 'opacity:0.5;' : ''}">0.5小时</span></td>
-                <td style="${!isPending ? 'color:#999;' : ''}">${allowHtml}</td>
-                <td>
-                    <div class="action-cell">
-                        ${isPending ? `<button class="action-btn btn-yellow btn-approve" data-id="${row.id}" data-time="${row.allow_transfer_time}" onclick="openApproveModal(${row.id})" style="display:none;">📝 同意</button>` : ''}
-                        ${isPending ? `<button class="action-btn btn-red" onclick="openRejectModal(${row.id})">📝 作废</button>` : ''}
-                        <a href="/transaction-detail/${row.id}" target="_blank" class="action-btn btn-blue" style="text-decoration:none; display:inline-block; ${!isPending ? 'opacity:0.5; cursor:not-allowed; pointer-events:none;' : ''}">📝 详情</a>
-                    </div>
-                </td>
-                <td>
-                    <div class="action-cell">
-                        <button class="action-btn btn-teal">📝 校验卡号</button>
-                        <button class="action-btn btn-orange">📝 校验姓名</button>
-                    </div>
-                </td>
+            html += `
+                <tr>
+                    <td><input type="checkbox" ${!isPending ? 'disabled' : ''}></td>
+                    <td style="${!isPending ? 'color:#999;' : ''}">${row.order_no}</td>
+                    <td class="text-red" style="${!isPending ? 'color:#999;' : ''}">${row.recharge_no}</td>
+                    <td style="${!isPending ? 'color:#999;' : ''}">0961427367</td>
+                    <td><span class="badge blue" style="${!isPending ? 'opacity:0.5;' : ''}">代付</span></td>
+                    <td style="${!isPending ? 'color:#999;' : ''}">${Number(row.amount).toLocaleString('vi-VN')} VND</td>
+                    <td style="${!isPending ? 'color:#999;' : ''}">${row.receiver_name}</td>
+                    <td style="${!isPending ? 'color:#999;' : ''}">${row.card_number}</td>
+                    <td style="${!isPending ? 'color:#999;' : ''}">${row.bank_name}</td>
+                    <td>${statusBadge}</td>
+                    <td><span class="badge blue" style="${!isPending ? 'opacity:0.5;' : ''}">商户代付</span></td>
+                    <td style="${!isPending ? 'color:#999;' : ''}">
+                        ${createdHtml}
+                        <br><span class="badge-timeago" style="${!isPending ? 'color:#999; background:transparent; border:none;' : ''}">${timeAgo}</span>
+                    </td>
+                    <td style="${!isPending ? 'color:#999;' : ''}">${formatTime(row.updated_at || row.created_at)}</td>
+                    <td style="${!isPending ? 'color:#999;' : ''}">${formatTime(row.polling_at)}</td>
+                    <td><span class="badge green" style="${!isPending ? 'opacity:0.5;' : ''}">0.5小时</span></td>
+                    <td style="${!isPending ? 'color:#999;' : ''}">${allowHtml}</td>
+                    <td>
+                        <div class="action-cell">
+                            ${isPending ? `<button class="action-btn btn-yellow btn-approve" data-id="${row.id}" data-time="${row.allow_transfer_time}" onclick="openApproveModal(${row.id})" style="display:none;">📝 同意</button>` : ''}
+                            ${isPending ? `<button class="action-btn btn-red" onclick="openRejectModal(${row.id})">📝 作废</button>` : ''}
+                            <a href="/transaction-detail/${row.id}" target="_blank" class="action-btn btn-blue" style="text-decoration:none; display:inline-block; ${!isPending ? 'opacity:0.5; cursor:not-allowed; pointer-events:none;' : ''}">📝 详情</a>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="action-cell">
+                            <button class="action-btn btn-teal" onclick="openVerifyModal(${row.id}, 'card')">📝 校验卡号</button>
+                            <button class="action-btn btn-orange" onclick="openVerifyModal(${row.id}, 'name')">📝 校验姓名</button>
+                        </div>
+                    </td>
+                </tr>
             `;
-            tbody.appendChild(tr);
         });
         
-        // Restore scroll position to freeze it in place
+        tbody.innerHTML = html;
+        
+        // Restore scroll position
         if (appMain) appMain.scrollTop = currentScroll;
-        else window.scrollTo(0, currentScroll);
         
         // Run time check immediately after render
         checkTimeIntervals();
     };
 
-    // 3. Lightning Fast Refresh with Visual Blink
-    let isRefreshing = false;
-    refreshBtn.addEventListener('click', (e) => {
-        // Visual button pop effect
-        const btn = e.currentTarget;
-        btn.classList.remove('btn-pop');
-        void btn.offsetWidth; // trigger reflow
-        btn.classList.add('btn-pop');
-
-        if (isRefreshing) return; // Prevent spam clicks overlapping
+    refreshBtn.addEventListener('click', async (e) => {
+        if (isRefreshing) return;
         isRefreshing = true;
         
-        const appMain = document.querySelector('.app-main');
-        const currentScroll = appMain ? appMain.scrollTop : window.scrollY;
-        
-        // Lock the height temporarily so the page doesn't shrink and pull the scrollbar up
-        tbody.style.minHeight = tbody.offsetHeight + 'px';
-        
-        // Clear table immediately to give visual feedback
-        tbody.innerHTML = '';
-        setTimeout(() => {
-            fetchTransactions().then(() => {
-                tbody.style.minHeight = ''; // Remove lock
-                if (appMain) appMain.scrollTop = currentScroll;
-                else window.scrollTo(0, currentScroll); // Ensure exact restoration
-                isRefreshing = false; // Release lock
-            }).catch(() => {
+        try {
+            // 1. Fetch data first (don't render yet)
+            await Promise.all([
+                fetchTransactions(false),
+                fetchLiveFeed()
+            ]);
+
+            // 2. Trigger ONE clean blink aligned with the render
+            tbody.classList.remove('blink-data');
+            void tbody.offsetWidth; 
+            tbody.classList.add('blink-data');
+            
+            // 3. Render immediately - it will happen during the blink animation
+            renderTable();
+
+        } catch (error) {
+            console.error('Refresh failed:', error);
+        } finally {
+            // 4. Cleanup after animation
+            setTimeout(() => {
+                tbody.classList.remove('blink-data');
                 isRefreshing = false;
-            });
-            fetchLiveFeed();
-        }, 80); // ultra-fast 80ms blink
+            }, 300);
+        }
     });
 
-    // Auto-refresh background every 1 second
+    // Auto-refresh background every 1 second (always run to detect snatches)
     setInterval(() => {
-        // Only auto refresh if no modal is currently open
-        if (!currentMode) {
-            fetchTransactions();
+        if (!isRefreshing) {
+            // We fetch but DON'T render the table (false)
+            // This keeps background data fresh for modal checks, but table stays static.
+            fetchTransactions(false); 
             fetchLiveFeed();
         }
     }, 1000);
@@ -495,11 +678,15 @@ document.addEventListener('DOMContentLoaded', () => {
     window.openRejectModal = (id) => {
         currentMode = 'reject';
         currentTransactionId = id;
-        modalTitle.innerText = 'Reject Transaction (作废)';
-        modalTitle.style.color = '#ff4949';
+        modalTitle.innerText = '(作废)';
+        modalTitle.style.color = '#f56c6c';
         adminNote.value = '';
+        adminNote.placeholder = '请输入作废理由...';
+        adminNote.style.display = 'block';
+        document.getElementById('verify-result').style.display = 'none';
         btnSubmitModal.disabled = true;
-        btnSubmitModal.className = 'btn btn-red btn-submit-disabled';
+        btnSubmitModal.innerText = '确认作废';
+        btnSubmitModal.className = 'btn-modal type-reject btn-submit-disabled';
         modal.style.display = 'flex';
         setTimeout(() => adminNote.focus(), 50);
     };
@@ -510,8 +697,12 @@ document.addEventListener('DOMContentLoaded', () => {
         modalTitle.innerText = '(同意)';
         modalTitle.style.color = '#e6a23c';
         adminNote.value = '';
+        adminNote.placeholder = '请输入审批备注...';
+        adminNote.style.display = 'block';
+        document.getElementById('verify-result').style.display = 'none';
         btnSubmitModal.disabled = true;
-        btnSubmitModal.className = 'btn btn-yellow btn-submit-disabled';
+        btnSubmitModal.innerText = '通过';
+        btnSubmitModal.className = 'btn-modal type-approve btn-submit-disabled';
         modal.style.display = 'flex';
         setTimeout(() => adminNote.focus(), 50);
     };
@@ -524,6 +715,34 @@ document.addEventListener('DOMContentLoaded', () => {
         modal.style.display = 'none';
         currentTransactionId = null;
         currentMode = '';
+        document.getElementById('verify-result').style.display = 'none';
+        adminNote.style.display = 'block';
+    };
+
+    window.openVerifyModal = (id, type) => {
+        const tx = allData.find(t => t.id == id);
+        if (!tx) return;
+
+        currentTransactionId = id;
+        currentMode = type === 'card' ? 'verify_card' : 'verify_name';
+        
+        const title = type === 'card' ? '(校验卡号)' : '(校验姓名)';
+        modalTitle.innerText = title;
+        modalTitle.style.color = type === 'card' ? '#00b4a7' : '#e6a23c';
+        
+        adminNote.value = '';
+        adminNote.placeholder = type === 'card' ? '请输入转账截图上的卡号...' : '请输入转账截图上的收款姓名...';
+        adminNote.style.display = 'block';
+        
+        const resultArea = document.getElementById('verify-result');
+        resultArea.style.display = 'none';
+        
+        btnSubmitModal.disabled = true;
+        btnSubmitModal.innerText = '完成校验';
+        btnSubmitModal.className = 'btn-modal type-approve btn-submit-disabled';
+        
+        modal.style.display = 'flex';
+        setTimeout(() => adminNote.focus(), 50);
     };
 
     window.showSuccessToast = () => {
@@ -557,18 +776,57 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     adminNote.addEventListener('input', (e) => {
-        if (e.target.value.trim() !== '') {
-            btnSubmitModal.disabled = false;
-            btnSubmitModal.classList.remove('btn-submit-disabled');
+        const val = e.target.value.trim();
+        const resultArea = document.getElementById('verify-result');
+        
+        if (currentMode === 'verify_card' || currentMode === 'verify_name') {
+            if (val === '') {
+                resultArea.style.display = 'none';
+                btnSubmitModal.disabled = true;
+                btnSubmitModal.classList.add('btn-submit-disabled');
+                return;
+            }
+
+            const tx = allData.find(t => t.id == currentTransactionId);
+            const targetVal = currentMode === 'verify_card' ? tx.card_number : tx.receiver_name;
+            
+            resultArea.style.display = 'block';
+            if (val === targetVal) {
+                resultArea.innerHTML = '✔ 校验成功';
+                resultArea.style.color = '#67c23a';
+                resultArea.style.background = '#f0f9eb';
+                resultArea.style.border = '1px solid #c2e7b0';
+                btnSubmitModal.disabled = false;
+                btnSubmitModal.classList.remove('btn-submit-disabled');
+            } else {
+                resultArea.innerHTML = '✘ 校验失败';
+                resultArea.style.color = '#f56c6c';
+                resultArea.style.background = '#fef0f0';
+                resultArea.style.border = '1px solid #fbc4c4';
+                btnSubmitModal.disabled = true;
+                btnSubmitModal.classList.add('btn-submit-disabled');
+            }
         } else {
-            btnSubmitModal.disabled = true;
-            btnSubmitModal.classList.add('btn-submit-disabled');
+            // Normal (approve/reject) mode
+            if (val !== '') {
+                btnSubmitModal.disabled = false;
+                btnSubmitModal.classList.remove('btn-submit-disabled');
+            } else {
+                btnSubmitModal.disabled = true;
+                btnSubmitModal.classList.add('btn-submit-disabled');
+            }
         }
     });
 
     btnSubmitModal.addEventListener('click', async () => {
         if (!currentTransactionId || btnSubmitModal.disabled) return;
         
+        // If it's just a verification modal, we just close it when they click the button
+        if (currentMode === 'verify_card' || currentMode === 'verify_name') {
+            closeModal();
+            return;
+        }
+
         const note = adminNote.value.trim();
         try {
             const endpoint = `/transactions/${currentTransactionId}/${currentMode}`;
@@ -583,16 +841,17 @@ document.addEventListener('DOMContentLoaded', () => {
                 closeModal();
                 showSuccessToast();
                 
-                // Fetch new data quietly without clearing the table to avoid a "flicker" that looks like a reload
-                fetchTransactions();
+                // Immediately refresh the table once without the "blink" animation
+                // This ensures the processed item disappears and data stays fresh
+                await fetchTransactions(true); 
                 if (typeof fetchLiveFeed === 'function') fetchLiveFeed();
                 
             } else if (result.alreadyTaken) {
                 closeModal();
                 showFailedToast(result.takenBy);
                 
-                // Fetch new data quietly without clearing the table to avoid a "flicker" that looks like a reload
-                fetchTransactions();
+                // Immediately refresh the table once without the "blink" animation
+                await fetchTransactions(true);
                 if (typeof fetchLiveFeed === 'function') fetchLiveFeed();
                 
             } else {
@@ -641,7 +900,102 @@ document.addEventListener('DOMContentLoaded', () => {
     setInterval(updateClock, 1000);
     updateClock();
 
-    // Initial Fetch
+    // 7. Toggle Filter Section Logic
+    // ---------------------------------------------------------
+    // 6. FILTER LOGIC
+    // ---------------------------------------------------------
+    const btnSearch = document.getElementById('btnSearch');
+    const btnResetFilter = document.getElementById('btnResetFilter');
+    const btnToday = document.getElementById('btnToday');
+    const btnYesterday = document.getElementById('btnYesterday');
 
-    fetchTransactions();
-});
+    const filterRechargeNo = document.getElementById('filterRechargeNo');
+    const filterDownstreamNo = document.getElementById('filterDownstreamNo');
+    const filterReceiver = document.getElementById('filterReceiver');
+    const filterCardNo = document.getElementById('filterCardNo');
+    const filterMinAmount = document.getElementById('filterMinAmount');
+    const filterMaxAmount = document.getElementById('filterMaxAmount');
+    const filterStatus = document.getElementById('filterStatus');
+    const filterProcessor = document.getElementById('filterProcessor');
+
+    const applySearch = () => {
+        currentFilters.rechargeNo = filterRechargeNo.value.trim();
+        currentFilters.downstreamNo = filterDownstreamNo.value.trim();
+        currentFilters.receiver = filterReceiver.value.trim();
+        currentFilters.cardNo = filterCardNo.value.trim();
+        currentFilters.minAmount = filterMinAmount.value.trim();
+        currentFilters.maxAmount = filterMaxAmount.value.trim();
+        currentFilters.status = filterStatus.value;
+        currentFilters.processor = filterProcessor.value.trim();
+        
+        currentPage = 1; // Reset to page 1 on search
+        renderTable();
+    };
+
+    const resetAllFilters = () => {
+        // Clear inputs
+        filterRechargeNo.value = '';
+        filterDownstreamNo.value = '';
+        filterReceiver.value = '';
+        filterCardNo.value = '';
+        filterMinAmount.value = '';
+        filterMaxAmount.value = '';
+        filterStatus.value = '';
+        filterProcessor.value = '';
+        
+        // Reset state
+        currentFilters = {
+            rechargeNo: '',
+            downstreamNo: '',
+            receiver: '',
+            cardNo: '',
+            minAmount: '',
+            maxAmount: '',
+            status: '',
+            processor: '',
+            dateRange: null
+        };
+        
+        currentPage = 1;
+        renderTable();
+    };
+
+    btnSearch.addEventListener('click', applySearch);
+    btnResetFilter.addEventListener('click', resetAllFilters);
+
+    btnToday.addEventListener('click', () => {
+        const start = new Date();
+        start.setHours(0,0,0,0);
+        const end = new Date();
+        end.setHours(23,59,59,999);
+        currentFilters.dateRange = { start, end };
+        currentPage = 1;
+        renderTable();
+    });
+
+    btnYesterday.addEventListener('click', () => {
+        const start = new Date();
+        start.setDate(start.getDate() - 1);
+        start.setHours(0,0,0,0);
+        const end = new Date();
+        end.setDate(end.getDate() - 1);
+        end.setHours(23,59,59,999);
+        currentFilters.dateRange = { start, end };
+        currentPage = 1;
+        renderTable();
+    });
+
+    // Toggle filter section
+    const toggleFilterBtn = document.getElementById('toggleFilterBtn');
+    const filterSection = document.getElementById('filterSection');
+
+    if (toggleFilterBtn && filterSection) {
+        toggleFilterBtn.addEventListener('click', () => {
+            filterSection.classList.toggle('collapsed');
+            toggleFilterBtn.classList.toggle('active');
+        });
+    }
+
+    // Initial Fetch
+    fetchTransactions(true);
+ });
