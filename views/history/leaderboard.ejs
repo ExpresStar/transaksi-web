@@ -99,7 +99,7 @@
                         <!-- 3. 跑分者类型 -->
                         <td><span class="badge blue">代付</span></td>
                         <!-- 4. 充值金额 -->
-                        <td><%= Number(tx.amount).toLocaleString('vi-VN') %>.000</td>
+                        <td><%= Number(tx.amount).toLocaleString('vi-VN') %></td>
                         <!-- 5. 收款账户 -->
                         <td><%= tx.receiver_name %></td>
                         <!-- 6. 卡号/虚拟地址 -->
@@ -214,5 +214,39 @@
             }
         }, 10000);
     </script>
+
+    <script>
+    // script pagination kamu taruh disini
+
+    const rowsPerPage = 10;
+    const rows = document.querySelectorAll(".tx-row");
+    const pageButtons = document.querySelectorAll(".page-btn");
+
+    function showPage(page) {
+        const start = (page - 1) * rowsPerPage;
+        const end = start + rowsPerPage;
+
+        rows.forEach((row, index) => {
+            if (index >= start && index < end) {
+                row.style.display = "";
+            } else {
+                row.style.display = "none";
+            }
+        });
+    }
+
+    pageButtons.forEach((btn, index) => {
+        btn.addEventListener("click", function(e) {
+            e.preventDefault();
+
+            pageButtons.forEach(b => b.classList.remove("active"));
+            btn.classList.add("active");
+
+            showPage(index + 1);
+        });
+    });
+
+    showPage(1);
+</script>
 </body>
 </html>
