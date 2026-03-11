@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>runner</title>
+    <link rel="stylesheet" href="login.css" />
+    <!-- Use Font Awesome for icons similar to the screenshot -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <style>
+      /* Specific page overrides if necessary */
+    </style>
+  </head>
+  <body>
+    <div class="login-wrapper">
+      <div class="login-card">
+        <div class="login-header">runner</div>
+        <form id="loginForm" class="login-form">
+          <div class="input-group">
+            <span class="input-icon"><i class="fa-solid fa-user"></i></span>
+            <input
+              type="text"
+              id="username"
+              placeholder="用户名"
+              required
+              autocomplete="username" />
+          </div>
+          <div class="input-group">
+            <span class="input-icon"><i class="fa-solid fa-lock"></i></span>
+            <input
+              type="password"
+              id="password"
+              placeholder="密码"
+              required
+              autocomplete="current-password" />
+          </div>
+          <div class="input-group">
+            <span class="input-icon"><i class="fa-solid fa-key"></i></span>
+            <input
+              type="password"
+              id="securityCode"
+              placeholder="安全码"
+              required />
+          </div>
+          <!-- The button in the screenshot is light blue -->
+          <button type="submit" class="btn-primary">登录</button>
+        </form>
+      </div>
+    </div>
+
+    <!-- Script to handle redirect -->
+    <script>
+      document.getElementById("loginForm").addEventListener("submit", async (e) => {
+        e.preventDefault();
+        
+        const username = document.getElementById("username").value.trim();
+        const password = document.getElementById("password").value.trim();
+        const securityCode = document.getElementById("securityCode").value.trim();
+        const submitBtn = document.querySelector(".btn-primary");
+        
+        submitBtn.innerText = "Processing...";
+        submitBtn.disabled = true;
+
+        try {
+            const response = await fetch('/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username, password, securityCode })
+            });
+            const result = await response.json();
+
+            if (result.success) {
+                // Save session for dashboard access
+                window.localStorage.setItem("approver_username", username);
+                window.localStorage.setItem("runner_logged_in", "true");
+                window.location.href = "/dashboard.html";
+            } else {
+                alert('Login Failed: ' + result.message);
+                submitBtn.innerText = "登录";
+                submitBtn.disabled = false;
+            }
+        } catch (error) {
+            console.error('Login error:', error);
+            alert('A network error occurred.');
+            submitBtn.innerText = "登录";
+            submitBtn.disabled = false;
+        }
+      });
+
+      // If already logged in, maybe auto redirect? No, let's keep it simple.
+    </script>
+  </body>
+</html>

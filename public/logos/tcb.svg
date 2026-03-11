@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 60" width="160" height="60">
+  <!-- Two red diamonds icon -->
+  <polygon points="18,8 30,30 18,52 6,30" fill="#E60028"/>
+  <polygon points="36,8 48,30 36,52 24,30" fill="#E60028"/>
+  <!-- TCB text -->
+  <text x="58" y="26" font-family="Arial Black, Arial" font-weight="900" font-size="13" fill="#1A1A1A" letter-spacing="0.5">TECH</text>
+  <text x="58" y="42" font-family="Arial Black, Arial" font-weight="900" font-size="13" fill="#1A1A1A" letter-spacing="0.5">COMBANK</text>
+</svg>

@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 60" width="160" height="60">
+  <!-- Tulip/flower icon in dark red/green -->
+  <rect x="4" y="10" width="44" height="40" rx="4" fill="#2D5016"/>
+  <rect x="8" y="14" width="36" height="32" rx="2" fill="#8B0000"/>
+  <!-- diagonal stripe -->
+  <polygon points="8,46 44,14 44,20 14,46" fill="#D4AF37" opacity="0.8"/>
+  <!-- AGRIBANK text -->
+  <text x="56" y="28" font-family="Arial Black, Arial" font-weight="900" font-size="13" fill="#2D5016" letter-spacing="0.5">AGRI</text>
+  <text x="56" y="45" font-family="Arial Black, Arial" font-weight="700" font-size="11" fill="#8B0000" letter-spacing="1">BANK</text>
+</svg>

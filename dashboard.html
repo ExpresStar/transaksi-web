@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>runner管理系统首页</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="app-wrapper">
+        <!-- Sidebar -->
+        <div class="sidebar-container" id="sidebar">
+            <div class="sidebar-logo">
+                <img src="https://api.dicebear.com/7.x/notionists/svg?seed=bob" alt="Avatar" class="avatar">
+                <span class="profile-name">波比</span>
+            </div>
+
+            <div class="sidebar-menu">
+                <div class="menu-group">
+                    <div class="menu-group-title" onclick="toggleSubMenu('home-menu', this)">
+                        <div class="title-left"><span class="icon">⌂</span><span>主页</span></div>
+                        <span class="arrow">v</span>
+                    </div>
+                    <div class="sub-menu" id="home-menu">
+                        <div class="sub-menu-item active-sub" id="nav-home" onclick="switchView('homeView', 'nav-home')">runner首页</div>
+                    </div>
+                </div>
+
+                <div class="menu-group">
+                    <div class="menu-group-title" onclick="toggleSubMenu('payment-menu', this)">
+                        <div class="title-left"><span class="icon">➤</span><span>支付管理</span></div>
+                        <span class="arrow">&lt;</span>
+                    </div>
+                    <div class="sub-menu" id="payment-menu" style="display: none;">
+                        <div class="sub-menu-item" id="nav-payment" onclick="switchView('paymentView', 'nav-payment')">交易列表</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Container -->
+        <div class="main-container">
+            <!-- Header -->
+            <div class="header">
+                <div class="navbar">
+                    <div class="navbar-left">
+                        <div class="hamburger">
+                            <div class="hamburger-line"></div>
+                            <div class="hamburger-line"></div>
+                            <div class="hamburger-line"></div>
+                        </div>
+                    </div>
+                    <div class="navbar-right">
+                        <span>欢迎使用runner系统</span>
+                        <a href="/approval-history" target="_blank" class="navbar-icon" style="text-decoration:none; color:inherit;">🏆 审批记录</a>
+                        <span class="navbar-icon">⛶ 全屏</span>
+                        <span class="navbar-icon">⎋ 退出</span>
+                    </div>
+                </div>
+                <div class="tags-view">
+                    <div class="tags-left">
+                        <span class="nav-arrow">«</span>
+                        <span class="tag-item">首页</span>
+                        <span class="tag-item active">跑分充值 <span class="tag-close">×</span></span>
+                    </div>
+                    <div class="tags-right">
+                        <span class="nav-arrow">»</span>
+                        <span class="page-action">页面操作 ▼</span>
+                        <span class="refresh">↻ 刷新</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- App Main -->
+            <div class="app-main">
+                <!-- Home View (Blank Welcome Page) -->
+                <div id="homeView">
+                    <h2>欢迎使用runner系统</h2>
+                </div>
+
+                <!-- Payment View (The existing table data) -->
+                <div id="paymentView" style="display: none;">
+                    <div class="filter-container">
+                        <div class="filter-row">
+                            <div class="form-item">
+                                <label>跑分者:</label>
+                                <select><option>请选择</option></select>
+                            </div>
+                            <div class="form-item">
+                                <label>跑分者类型:</label>
+                                <select><option>请选择</option></select>
+                            </div>
+                            <div class="form-item">
+                                <label>下游单号:</label>
+                                <input type="text" placeholder="" style="width: 140px;">
+                            </div>
+                            <div class="form-item">
+                                <label>充值单号:</label>
+                                <input type="text" placeholder="" style="width: 140px;">
+                            </div>
+                        </div>
+                        
+                        <div class="filter-row">
+                            <div class="form-item"><label>收款账户:</label><input type="text" placeholder="" style="width: 120px;"></div>
+                            <div class="form-item"><label>卡号:</label><input type="text" placeholder="" style="width: 120px;"></div>
+                            <div class="form-item"><label>类型:</label><select><option>抢单充值</option></select></div>
+                            <div class="form-item"><label>状态:</label><select><option>已转账</option></select></div>
+                            <div class="form-item"><label>通知下发状态:</label><select><option>请选择</option></select></div>
+                        </div>
+
+                        <div class="filter-row">
+                            <div class="form-item"><label>提取状态:</label><select><option>请选择</option></select></div>
+                            <div class="form-item"><label>充值单来源:</label><select><option>请选择</option></select></div>
+                            <div class="form-item"><label>审核状态:</label><select><option>请选择</option></select></div>
+                            <div class="form-item">
+                                <label>创建时间:</label>
+                                <input type="text" class="date-input" value="2026-02-21 00:00:00">
+                                <span class="separator">-</span>
+                                <input type="text" class="date-input" value="2026-02-22 00:00:00">
+                            </div>
+                        </div>
+
+                        <div class="filter-row">
+                            <div class="form-item"><label>请求货币:</label><select><option>请选择</option></select></div>
+                            <div class="form-item"><label>处理人:</label><input type="text" placeholder="" style="width: 120px;"></div>
+                            <div class="form-item">
+                                <label>充值金额:</label>
+                                <input type="text" class="small-input" placeholder="最小值">
+                                <span class="separator">-</span>
+                                <input type="text" class="small-input" placeholder="最大值">
+                            </div>
+                            <div class="form-item">
+                                <label>入账时间:</label>
+                                <input type="text" class="date-input clear" placeholder="开始时间">
+                                <span class="separator">-</span>
+                                <input type="text" class="date-input clear" placeholder="结束时间">
+                            </div>
+                        </div>
+
+                        <div class="filter-actions">
+                            <button class="btn btn-green">🔍 搜索</button>
+                            <button class="btn btn-orange">🧹 重置</button>
+                            <button class="btn btn-blue">📅 今天</button>
+                            <button class="btn btn-gray">📅 昨天</button>
+                        </div>
+                    </div>
+
+                    <div class="table-container">
+                        <div class="table-toolbar">
+                            <div class="btn-group">
+                                <button class="toolbar-btn">🔍</button>
+                                <button class="toolbar-btn">↻</button>
+                                <button class="toolbar-btn">▤ ▾</button>
+                                <button class="toolbar-btn">⤓</button>
+                            </div>
+                        </div>
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th><input type="checkbox"></th>
+                                    <th>下游单号</th>
+                                    <th>充值单号</th>
+                                    <th>跑分者</th>
+                                    <th>跑分者类型</th>
+                                    <th>充值金额</th>
+                                    <th>收款账户</th>
+                                    <th>卡号/虚拟地址</th>
+                                    <th>银行名称</th>
+                                    <th>提取状态</th>
+                                    <th>充值单来源</th>
+                                    <th>创建时间</th>
+                                    <th>修改时间</th>
+                                    <th>轮询时间 <span class="sort-icon">▲</span></th>
+                                    <th>跑分者等级</th>
+                                    <th>允许入账时间</th>
+                                    <th>操作</th>
+                                    <th>操作2</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Rows injected by script.js -->
+                            </tbody>
+                        </table>
+                        
+                        <!-- Table Footer: Pagination & Stats -->
+                        <div class="table-footer" style="display: flex; justify-content: space-between; align-items: center; margin-top: 15px;">
+                            <div class="footer-left" style="display: flex; gap: 20px; align-items: center;">
+                                <span id="footer-date" style="font-size: 13px; color: #606266; font-family: monospace;"></span>
+                                <span style="font-size: 13px; color: #606266;">共 <span id="total-tx" style="font-size: 14px; font-weight: bold; color: #409eff; transition: all 0.3s ease;">0</span> 条</span>
+                            </div>
+                            <div class="footer-right">
+                                <!-- Pagination -->
+                                <div id="pagination-container" style="display: flex; gap: 5px;"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notification Toast -->
+    <div id="notification-toast" style="position: fixed; top: 60px; right: -300px; background: #f0f9eb; border: 1px solid #e1f3d8; color: #67c23a; padding: 12px 20px; border-radius: 4px; box-shadow: 0 2px 12px 0 rgba(0,0,0,0.1); transition: right 0.4s cubic-bezier(0.18, 0.89, 0.32, 1.28); z-index: 10000; font-size: 14px; display: flex; align-items: center; gap: 10px; pointer-events: none;">
+        <span style="font-size: 16px;">🔔</span>
+        <span id="notification-text">新交易 +1</span>
+    </div>
+    <script src="script.js?v=20"></script>
+</body>
+</html>

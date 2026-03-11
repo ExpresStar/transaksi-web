@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MB Bank - Chuyển khoản thành công</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html { max-width: 420px; margin: 0 auto; }
+    body {
+      font-family: 'Segoe UI', Arial, sans-serif;
+      background: #f2f4f7;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      max-width: 420px;
+      margin: 0 auto;
+    }
+
+    /* TOP NAV */
+    .nav {
+      background: #E8002D;
+      padding: 14px 16px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+    .nav-back { color: #fff; font-size: 20px; cursor: pointer; }
+    .nav-title { flex: 1; text-align: center; color: #fff; font-size: 16px; font-weight: 600; margin-right: 28px; }
+
+    /* SUCCESS BANNER */
+    .success-banner {
+      background: #E8002D;
+      padding: 28px 16px 40px;
+      text-align: center;
+      color: white;
+    }
+    .success-icon {
+      width: 64px; height: 64px;
+      background: #fff;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      margin: 0 auto 14px;
+      font-size: 30px;
+      color: #E8002D;
+    }
+    .success-label { font-size: 15px; opacity: 0.9; margin-bottom: 6px; }
+    .success-amount {
+      font-size: 36px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+    }
+    .success-amount span { font-size: 18px; font-weight: 400; opacity: 0.85; }
+
+    /* CARD */
+    .card {
+      background: #fff;
+      border-radius: 16px 16px 0 0;
+      margin-top: -20px;
+      flex: 1;
+      padding: 24px 20px;
+      box-shadow: 0 -4px 20px rgba(0,0,0,0.06);
+    }
+
+    .card-logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 20px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid #f0f0f0;
+    }
+    .card-logo img { height: 36px; object-fit: contain; }
+    .card-logo-label { font-size: 12px; color: #999; }
+
+    /* DETAIL ROWS */
+    .section-title {
+      font-size: 12px;
+      font-weight: 700;
+      color: #E8002D;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      margin: 18px 0 10px;
+    }
+    .row {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      padding: 11px 0;
+      border-bottom: 1px solid #f5f5f5;
+    }
+    .row:last-child { border-bottom: none; }
+    .row-label { color: #888; font-size: 13px; flex-shrink: 0; max-width: 45%; }
+    .row-value { color: #1a1a1a; font-size: 13px; font-weight: 600; text-align: right; max-width: 55%; word-break: break-all; }
+    .row-value.highlight { color: #E8002D; font-size: 15px; font-weight: 700; }
+    .row-value.code { font-family: monospace; font-size: 12px; color: #555; }
+
+    /* STATUS BADGE */
+    .badge-success {
+      display: inline-flex; align-items: center; gap: 4px;
+      background: #e8f9ee; color: #28a745;
+      border-radius: 20px; padding: 3px 10px; font-size: 12px; font-weight: 700;
+    }
+
+    /* FOOTER */
+    .footer {
+      text-align: center;
+      padding: 20px;
+      color: #bbb;
+      font-size: 11px;
+      background: #fff;
+      border-top: 1px solid #f0f0f0;
+    }
+    .footer-logo { height: 22px; margin-bottom: 6px; }
+  </style>
+</head>
+<body>
+
+  <div class="nav">
+    <span class="nav-back">←</span>
+    <span class="nav-title">Chi tiết giao dịch</span>
+  </div>
+
+  <div class="success-banner">
+    <div class="success-icon">✔</div>
+    <div class="success-label">Chuyển khoản thành công</div>
+    <div class="success-amount">
+      <%= Number(transaction.amount).toLocaleString('vi-VN') %> <span>VND</span>
+    </div>
+  </div>
+
+  <div class="card">
+
+    <div class="card-logo">
+      <img src="/logos/mb.svg" alt="MB Bank">
+      <span class="card-logo-label">MB Bank · Ngân hàng Quân đội</span>
+    </div>
+
+    <div class="section-title">Thông tin người nhận</div>
+
+    <div class="row">
+      <span class="row-label">Người thụ hưởng</span>
+      <span class="row-value"><%= transaction.receiver_name %></span>
+    </div>
+    <div class="row">
+      <span class="row-label">Số tài khoản</span>
+      <span class="row-value code"><%= transaction.card_number %></span>
+    </div>
+    <div class="row">
+      <span class="row-label">Ngân hàng nhận</span>
+      <span class="row-value"><%= transaction.bank_name %></span>
+    </div>
+
+    <div class="section-title">Thông tin giao dịch</div>
+
+    <div class="row">
+      <span class="row-label">Số tiền</span>
+      <span class="row-value highlight"><%= Number(transaction.amount).toLocaleString('vi-VN') %> VND</span>
+    </div>
+    <div class="row">
+      <span class="row-label">Nội dung CK</span>
+      <span class="row-value code"><%= transaction.recharge_no %></span>
+    </div>
+    <div class="row">
+      <span class="row-label">Thời gian GD</span>
+      <span class="row-value"><%
+        var d = new Date(transaction.created_at);
+        var hh = String(d.getHours()).padStart(2,'0');
+        var mi = String(d.getMinutes()).padStart(2,'0');
+        var ss = String(d.getSeconds()).padStart(2,'0');
+        var dd = String(d.getDate()).padStart(2,'0');
+        var mm = String(d.getMonth()+1).padStart(2,'0');
+        var yy = d.getFullYear();
+      %><%= hh %>:<%= mi %>:<%= ss %> - <%= dd %>/<%= mm %>/<%= yy %></span>
+    </div>
+    <div class="row">
+      <span class="row-label">Mã giao dịch</span>
+      <span class="row-value code"><%= transaction.order_no %></span>
+    </div>
+    <div class="row">
+      <span class="row-label">Trạng thái</span>
+      <span class="row-value"><span class="badge-success">✔ Thành công</span></span>
+    </div>
+  </div>
+
+  <div class="footer">
+    <div><img src="/logos/mb.svg" alt="MB" class="footer-logo"></div>
+    Giao dịch được bảo mật bởi MB Bank · SSL 256-bit
+  </div>
+
+</body>
+</html>

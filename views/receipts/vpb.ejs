@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VPBank - Chuyển khoản thành công</title>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html { max-width: 420px; margin: 0 auto; }
+    body {
+      font-family: 'Montserrat', 'Segoe UI', sans-serif;
+      background: #111;
+      min-height: 100vh;
+      display: flex; flex-direction: column;
+      color: #fff;
+      max-width: 420px;
+      margin: 0 auto;
+    }
+    .nav {
+      background: #1a1a1a;
+      padding: 14px 16px;
+      display: flex; align-items: center;
+      border-bottom: 1px solid #2a2a2a;
+    }
+    .nav-back { color: #fff; font-size: 20px; margin-right: 12px; }
+    .nav-title { flex: 1; text-align: center; color: #fff; font-size: 15px; font-weight: 700; margin-right: 28px; }
+
+    .success-banner {
+      background: #1a1a1a;
+      padding: 36px 20px 50px;
+      text-align: center;
+    }
+    .logo-wrap { display: flex; justify-content: center; margin-bottom: 18px; }
+    .logo-wrap img { height: 40px; object-fit: contain; }
+    .success-circle {
+      width: 70px; height: 70px;
+      border-radius: 50%;
+      background: rgba(255, 75, 0, 0.08);
+      border: 2px solid #FF4B00;
+      display: flex; align-items: center; justify-content: center;
+      margin: 0 auto 14px;
+      font-size: 28px; color: #FF4B00;
+    }
+    .success-label { font-size: 13px; color: #888; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 1px; }
+    .success-amount { font-size: 38px; font-weight: 800; color: #FF4B00; }
+    .success-amount .vnd { font-size: 15px; font-weight: 500; color: #666; }
+
+    .card {
+      background: #1c1c1c;
+      border-radius: 20px 20px 0 0;
+      margin-top: -24px; flex: 1;
+      padding: 24px 20px;
+      border-top: 1px solid #2a2a2a;
+    }
+
+    .section-title {
+      font-size: 10px; font-weight: 700; color: #FF4B00;
+      text-transform: uppercase; letter-spacing: 1.5px;
+      margin: 18px 0 10px;
+    }
+    .row {
+      display: flex; justify-content: space-between; align-items: flex-start;
+      padding: 11px 0;
+      border-bottom: 1px solid #252525;
+    }
+    .row:last-child { border-bottom: none; }
+    .row-label { color: #666; font-size: 12.5px; font-weight: 500; }
+    .row-value { color: #e0e0e0; font-size: 12.5px; font-weight: 600; text-align: right; max-width: 58%; word-break: break-all; }
+    .row-value.orange { color: #FF4B00; font-size: 15px; font-weight: 700; }
+    .row-value.mono { font-family: 'Courier New', monospace; font-size: 12px; color: #888; }
+    .badge {
+      display: inline-flex; align-items: center; gap: 4px;
+      background: rgba(255,75,0,0.12); color: #FF4B00;
+      border: 1px solid rgba(255,75,0,0.3);
+      border-radius: 20px; padding: 3px 10px; font-size: 11px; font-weight: 700;
+    }
+
+    .txid-box {
+      background: #141414; border-radius: 12px; padding: 14px 16px;
+      text-align: center; margin-top: 20px;
+      border: 1px solid #2a2a2a;
+    }
+    .txid-label { font-size: 10px; color: #555; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px; }
+    .txid-val { font-family: 'Courier New', monospace; font-size: 13px; font-weight: 600; color: #888; letter-spacing: 0.5px; }
+
+    .footer {
+      background: #141414; text-align: center; padding: 16px;
+      color: #444; font-size: 11px; border-top: 1px solid #2a2a2a;
+    }
+    .footer img { height: 22px; margin-bottom: 6px; }
+  </style>
+</head>
+<body>
+  <div class="nav">
+    <span class="nav-back">←</span>
+    <span class="nav-title">Biên lai giao dịch</span>
+  </div>
+
+  <div class="success-banner">
+    <div class="logo-wrap"><img src="/logos/vpb.svg" alt="VPBank"></div>
+    <div class="success-circle">✔</div>
+    <div class="success-label">Giao dịch thành công</div>
+    <div class="success-amount"><%= Number(transaction.amount).toLocaleString('vi-VN') %> <span class="vnd">VND</span></div>
+  </div>
+
+  <div class="card">
+    <div class="section-title">Người nhận</div>
+    <div class="row"><span class="row-label">Tên tài khoản</span><span class="row-value"><%= transaction.receiver_name %></span></div>
+    <div class="row"><span class="row-label">Số tài khoản</span><span class="row-value mono"><%= transaction.card_number %></span></div>
+    <div class="row"><span class="row-label">Ngân hàng</span><span class="row-value"><%= transaction.bank_name %></span></div>
+
+    <div class="section-title">Chi tiết</div>
+    <div class="row"><span class="row-label">Số tiền</span><span class="row-value orange"><%= Number(transaction.amount).toLocaleString('vi-VN') %> đ</span></div>
+    <div class="row"><span class="row-label">Phí</span><span class="row-value">Miễn phí</span></div>
+    <div class="row"><span class="row-label">Nội dung CK</span><span class="row-value mono"><%= transaction.recharge_no %></span></div>
+    <div class="row"><span class="row-label">Thời gian</span><span class="row-value"><%
+      var d = new Date(transaction.created_at);
+      var hh = String(d.getHours()).padStart(2,'0');
+      var mi = String(d.getMinutes()).padStart(2,'0');
+      var ss = String(d.getSeconds()).padStart(2,'0');
+      var dd2 = String(d.getDate()).padStart(2,'0');
+      var mm2 = String(d.getMonth()+1).padStart(2,'0');
+      var yy2 = d.getFullYear();
+    %><%= hh %>:<%= mi %>:<%= ss %><br><small><%= dd2 %>/<%= mm2 %>/<%= yy2 %></small></span></div>
+    <div class="row"><span class="row-label">Trạng thái</span><span class="row-value"><span class="badge">✔ Thành công</span></span></div>
+
+    <div class="txid-box">
+      <div class="txid-label">Mã giao dịch</div>
+      <div class="txid-val"><%= transaction.order_no %></div>
+    </div>
+  </div>
+
+  <div class="footer">
+    <img src="/logos/vpb.svg" alt="VPBank">
+    <br>VPBank · Ngân hàng Việt Nam Thịnh Vượng
+  </div>
+</body>
+</html>

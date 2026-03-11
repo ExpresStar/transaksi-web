@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BIDV - Giao dịch thành công</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html { max-width: 420px; margin: 0 auto; }
+    body {
+      font-family: 'Segoe UI', Arial, sans-serif;
+      background: #f0f4fa;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    .nav {
+      background: #005BAA;
+      padding: 14px 16px;
+      display: flex;
+      align-items: center;
+    }
+    .nav-back { color: #fff; font-size: 20px; margin-right: 12px; }
+    .nav-title { flex: 1; text-align: center; color: #fff; font-size: 16px; font-weight: 600; margin-right: 28px; }
+
+    .success-banner {
+      background: linear-gradient(160deg, #005BAA 0%, #0079D3 100%);
+      padding: 30px 16px 44px;
+      text-align: center;
+      color: white;
+    }
+    .success-icon {
+      width: 60px; height: 60px;
+      background: #fff;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      margin: 0 auto 14px;
+      font-size: 28px; color: #28a745;
+    }
+    .success-label { font-size: 14px; opacity: 0.85; margin-bottom: 8px; }
+    .success-amount { font-size: 34px; font-weight: 700; }
+    .success-amount span { font-size: 17px; font-weight: 400; opacity: 0.8; }
+    .success-time { font-size: 11px; opacity: 0.65; margin-top: 6px; }
+
+    .card {
+      background: #fff;
+      border-radius: 16px 16px 0 0;
+      margin-top: -22px;
+      flex: 1;
+      padding: 22px 20px;
+    }
+    .card-logo {
+      display: flex; align-items: center; gap: 10px;
+      margin-bottom: 18px; padding-bottom: 14px;
+      border-bottom: 1px solid #eee;
+    }
+    .card-logo img { height: 34px; object-fit: contain; }
+    .card-logo-sub { font-size: 11px; color: #999; }
+
+    .section-title {
+      font-size: 11px; font-weight: 700; color: #005BAA;
+      text-transform: uppercase; letter-spacing: 0.8px;
+      margin: 16px 0 8px;
+    }
+    .row {
+      display: flex; justify-content: space-between; align-items: flex-start;
+      padding: 11px 0; border-bottom: 1px solid #f5f5f5;
+    }
+    .row:last-child { border-bottom: none; }
+    .row-label { color: #888; font-size: 13px; max-width: 45%; }
+    .row-value { color: #1a1a1a; font-size: 13px; font-weight: 600; text-align: right; max-width: 55%; word-break: break-all; }
+    .row-value.amount { color: #005BAA; font-size: 15px; font-weight: 700; }
+    .row-value.mono { font-family: monospace; font-size: 12px; color: #555; }
+    .badge { display: inline-flex; align-items: center; gap: 4px; background: #e8f9ee; color: #28a745; border-radius: 20px; padding: 3px 10px; font-size: 12px; font-weight: 700; }
+
+    .divider { height: 6px; background: #f0f4fa; margin: 0 -20px; }
+
+    .footer {
+      text-align: center; padding: 20px; color: #bbb;
+      font-size: 11px; background: #fff; border-top: 1px solid #f0f0f0;
+    }
+    .footer img { height: 20px; margin-bottom: 6px; }
+  </style>
+</head>
+<body>
+  <div class="nav">
+    <span class="nav-back">←</span>
+    <span class="nav-title">Chi tiết giao dịch</span>
+  </div>
+
+  <div class="success-banner">
+    <div class="success-icon">✔</div>
+    <div class="success-label">Giao dịch thành công</div>
+    <div class="success-amount"><%= Number(transaction.amount).toLocaleString('vi-VN') %> <span>VND</span></div>
+    <div class="success-time"><%
+      var d = new Date(transaction.created_at);
+      var hh = String(d.getHours()).padStart(2,'0');
+      var mi = String(d.getMinutes()).padStart(2,'0');
+      var dd2 = String(d.getDate()).padStart(2,'0');
+      var mm2 = String(d.getMonth()+1).padStart(2,'0');
+      var yy2 = d.getFullYear();
+    %><%= dd2 %>/<%= mm2 %>/<%= yy2 %> lúc <%= hh %>:<%= mi %></div>
+  </div>
+
+  <div class="card">
+    <div class="card-logo">
+      <img src="/logos/bidv.svg" alt="BIDV">
+      <span class="card-logo-sub">Ngân hàng Đầu tư và Phát triển VN</span>
+    </div>
+
+    <div class="section-title">Người thụ hưởng</div>
+    <div class="row"><span class="row-label">Tên người nhận</span><span class="row-value"><%= transaction.receiver_name %></span></div>
+    <div class="row"><span class="row-label">Số tài khoản</span><span class="row-value mono"><%= transaction.card_number %></span></div>
+    <div class="row"><span class="row-label">Ngân hàng</span><span class="row-value"><%= transaction.bank_name %></span></div>
+
+    <div class="divider"></div>
+
+    <div class="section-title">Chi tiết giao dịch</div>
+    <div class="row"><span class="row-label">Số tiền chuyển</span><span class="row-value amount"><%= Number(transaction.amount).toLocaleString('vi-VN') %> VND</span></div>
+    <div class="row"><span class="row-label">Phí giao dịch</span><span class="row-value">Miễn phí</span></div>
+    <div class="row"><span class="row-label">Nội dung</span><span class="row-value mono"><%= transaction.recharge_no %></span></div>
+    <div class="row"><span class="row-label">Thời gian GD</span><span class="row-value"><%
+      var d3 = new Date(transaction.created_at);
+      var hh3 = String(d3.getHours()).padStart(2,'0');
+      var mi3 = String(d3.getMinutes()).padStart(2,'0');
+      var ss3 = String(d3.getSeconds()).padStart(2,'0');
+      var dd3 = String(d3.getDate()).padStart(2,'0');
+      var mm3 = String(d3.getMonth()+1).padStart(2,'0');
+      var yy3 = d3.getFullYear();
+    %><%= hh3 %>:<%= mi3 %>:<%= ss3 %> - <%= dd3 %>/<%= mm3 %>/<%= yy3 %></span></div>
+    <div class="row"><span class="row-label">Mã tham chiếu</span><span class="row-value mono"><%= transaction.order_no %></span></div>
+    <div class="row"><span class="row-label">Trạng thái</span><span class="row-value"><span class="badge">✔ Thành công</span></span></div>
+  </div>
+
+  <div class="footer">
+    <div><img src="/logos/bidv.svg" alt="BIDV"></div>
+    Giao dịch được bảo mật bởi BIDV · SSL 256-bit
+  </div>
+</body>
+</html>

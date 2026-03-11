@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Techcombank - Chuyển tiền thành công</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html { max-width: 420px; margin: 0 auto; }
+    body {
+      font-family: 'Inter', 'Segoe UI', Arial, sans-serif;
+      background: #fafafa;
+      min-height: 100vh;
+      display: flex; flex-direction: column;
+      max-width: 420px;
+      margin: 0 auto;
+    }
+    .nav {
+      background: #fff;
+      padding: 14px 16px;
+      display: flex; align-items: center;
+      border-bottom: 1px solid #eee;
+    }
+    .nav-back { color: #222; font-size: 20px; margin-right: 12px; }
+    .nav-title { flex: 1; text-align: center; color: #1a1a1a; font-size: 16px; font-weight: 700; margin-right: 28px; }
+
+    .success-banner {
+      background: #fff;
+      padding: 32px 20px 28px;
+      text-align: center;
+      border-bottom: 8px solid #f5f5f5;
+    }
+    .success-icon {
+      width: 70px; height: 70px;
+      background: #e8f9ee;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      margin: 0 auto 14px;
+      font-size: 32px; color: #28a745;
+    }
+    .success-label { font-size: 14px; color: #666; margin-bottom: 8px; }
+    .success-amount { font-size: 36px; font-weight: 800; color: #1a1a1a; }
+    .success-amount .vnd { font-size: 16px; font-weight: 600; color: #888; }
+    .tcb-badge {
+      display: inline-flex; align-items: center; gap: 6px;
+      background: #E60000; color: white;
+      border-radius: 6px; padding: 4px 12px; font-size: 11px;
+      font-weight: 700; margin-top: 12px; letter-spacing: 0.5px;
+    }
+
+    .section {
+      background: #fff; margin-top: 8px; padding: 0 20px;
+    }
+    .section-title {
+      font-size: 11px; font-weight: 700; color: #E60000;
+      text-transform: uppercase; letter-spacing: 0.8px;
+      padding: 16px 0 8px;
+      display: flex; align-items: center; gap: 6px;
+    }
+    .section-title::after { content: ''; flex: 1; height: 1px; background: #f0f0f0; }
+
+    .row { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid #f5f5f5; }
+    .row:last-child { border-bottom: none; }
+    .row-label { color: #999; font-size: 13px; font-weight: 400; }
+    .row-value { color: #1a1a1a; font-size: 13px; font-weight: 600; text-align: right; max-width: 55%; word-break: break-all; }
+    .row-value.red { color: #E60000; font-size: 15px; font-weight: 700; }
+    .row-value.mono { font-family: 'Courier New', monospace; font-size: 11.5px; color: #555; }
+    .badge-ok { display: inline-flex; align-items: center; gap: 4px; background: #e8f9ee; color: #28a745; border-radius: 20px; padding: 3px 10px; font-size: 12px; font-weight: 700; }
+
+    .receipt-id {
+      background: #fafafa; border: 1px solid #e8e8e8; border-radius: 10px;
+      margin: 16px 20px; padding: 14px 16px; text-align: center;
+    }
+    .receipt-id-label { font-size: 11px; color: #aaa; margin-bottom: 5px; text-transform: uppercase; letter-spacing: 0.5px; }
+    .receipt-id-val { font-family: monospace; font-size: 14px; font-weight: 700; color: #333; letter-spacing: 1px; }
+
+    .footer { text-align: center; padding: 20px; color: #bbb; font-size: 11px; background: #fff; margin-top: 8px; }
+    .footer img { height: 22px; margin-bottom: 6px; }
+    .card-logo { display: flex; justify-content: center; align-items: center; gap: 6px; padding: 14px 20px 0; }
+    .card-logo img { height: 30px; }
+  </style>
+</head>
+<body>
+  <div class="nav">
+    <span class="nav-back">←</span>
+    <span class="nav-title">Biên lai chuyển khoản</span>
+  </div>
+
+  <div class="success-banner">
+    <div class="success-icon">✔</div>
+    <div class="success-label">Chuyển khoản thành công</div>
+    <div class="success-amount"><%= Number(transaction.amount).toLocaleString('vi-VN') %> <span class="vnd">VND</span></div>
+    <div><span class="tcb-badge">⚡ TECHCOMBANK</span></div>
+  </div>
+
+  <div class="card-logo"><img src="/logos/tcb.svg" alt="Techcombank"></div>
+
+  <div class="section">
+    <div class="section-title">Người nhận</div>
+    <div class="row"><span class="row-label">Tên tài khoản</span><span class="row-value"><%= transaction.receiver_name %></span></div>
+    <div class="row"><span class="row-label">Số tài khoản</span><span class="row-value mono"><%= transaction.card_number %></span></div>
+    <div class="row"><span class="row-label">Ngân hàng nhận</span><span class="row-value"><%= transaction.bank_name %></span></div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Giao dịch</div>
+    <div class="row"><span class="row-label">Số tiền chuyển</span><span class="row-value red"><%= Number(transaction.amount).toLocaleString('vi-VN') %> đ</span></div>
+    <div class="row"><span class="row-label">Phí chuyển khoản</span><span class="row-value">Miễn phí</span></div>
+    <div class="row"><span class="row-label">Nội dung</span><span class="row-value mono"><%= transaction.recharge_no %></span></div>
+    <div class="row"><span class="row-label">Ngày giờ GD</span><span class="row-value"><%
+      var d = new Date(transaction.created_at);
+      var hh = String(d.getHours()).padStart(2,'0');
+      var mi = String(d.getMinutes()).padStart(2,'0');
+      var ss = String(d.getSeconds()).padStart(2,'0');
+      var dd2 = String(d.getDate()).padStart(2,'0');
+      var mm2 = String(d.getMonth()+1).padStart(2,'0');
+      var yy2 = d.getFullYear();
+    %><%= hh %>:<%= mi %>:<%= ss %><br><small><%= dd2 %>/<%= mm2 %>/<%= yy2 %></small></span></div>
+    <div class="row"><span class="row-label">Trạng thái</span><span class="row-value"><span class="badge-ok">✔ Thành công</span></span></div>
+  </div>
+
+  <div class="receipt-id">
+    <div class="receipt-id-label">Mã giao dịch tham chiếu</div>
+    <div class="receipt-id-val"><%= transaction.order_no %></div>
+  </div>
+
+  <div class="footer">
+    <img src="/logos/tcb.svg" alt="TCB">
+    <br>Techcombank · Vì một Việt Nam thịnh vượng hơn
+  </div>
+</body>
+</html>

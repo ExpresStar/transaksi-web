@@ -1,0 +1,96 @@
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family:
+    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue",
+    Arial, sans-serif;
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: url("bg-wave.png") no-repeat center center/cover;
+}
+
+.login-wrapper {
+  width: 100%;
+  max-width: 420px;
+  padding: 20px;
+}
+
+.login-card {
+  background: #ffffff;
+  border-radius: 4px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  padding: 40px;
+}
+
+.login-header {
+  font-size: 16px;
+  color: #303133;
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+.login-form {
+  display: flex;
+  flex-direction: column;
+}
+
+.input-group {
+  display: flex;
+  align-items: center;
+  border: 1px solid #dcdfe6;
+  border-radius: 4px;
+  margin-bottom: 20px;
+  background: #fff;
+  overflow: hidden;
+  transition: border-color 0.2s cubic-bezier(0.645, 0.045, 0.355, 1);
+}
+
+.input-group:focus-within {
+  border-color: #409eff;
+}
+
+.input-icon {
+  width: 40px;
+  color: #909399;
+  font-size: 14px;
+  flex-shrink: 0;
+  text-align: center;
+}
+
+.input-group input {
+  width: 100%;
+  height: 40px;
+  border: none;
+  outline: none;
+  font-size: 14px;
+  color: #606266;
+  background: transparent;
+  padding-right: 15px; /* ensure text doesn't hit the right edge */
+}
+
+.input-group input::placeholder {
+  color: #c0c4cc;
+}
+
+.btn-primary {
+  width: 100%;
+  height: 40px;
+  background-color: #66b1ff;
+  color: white;
+  font-size: 14px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+  margin-top: 5px;
+}
+
+.btn-primary:hover {
+  background-color: #409eff;
+}

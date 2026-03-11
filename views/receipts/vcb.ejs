@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Vietcombank - Chuyển tiền thành công</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html { max-width: 420px; margin: 0 auto; }
+    body {
+      font-family: 'Segoe UI', Arial, sans-serif;
+      background: #f5f7f5;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      max-width: 420px;
+      margin: 0 auto;
+    }
+    .nav {
+      background: #007A33;
+      padding: 14px 16px;
+      display: flex; align-items: center;
+    }
+    .nav-back { color: #fff; font-size: 20px; margin-right: 12px; }
+    .nav-title { flex: 1; text-align: center; color: #fff; font-size: 16px; font-weight: 600; margin-right: 28px; }
+
+    .success-banner {
+      background: linear-gradient(150deg, #007A33 0%, #00A347 100%);
+      padding: 32px 16px 48px;
+      text-align: center; color: white;
+    }
+    .check-wrap {
+      width: 62px; height: 62px; margin: 0 auto 14px;
+      background: rgba(255,255,255,0.15);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      border: 2px solid rgba(255,255,255,0.4);
+    }
+    .check-inner {
+      width: 44px; height: 44px; background: #fff;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 22px; color: #007A33;
+    }
+    .success-label { font-size: 15px; font-weight: 600; margin-bottom: 6px; }
+    .success-amount { font-size: 36px; font-weight: 700; }
+    .success-amount .vnd { font-size: 16px; font-weight: 400; opacity: 0.8; }
+
+    .card {
+      background: #fff; border-radius: 20px 20px 0 0;
+      margin-top: -24px; flex: 1;
+      padding: 24px 20px;
+    }
+    .card-logo {
+      display: flex; align-items: center; gap: 10px;
+      padding-bottom: 16px; margin-bottom: 16px;
+      border-bottom: 1px solid #eef5ee;
+    }
+    .card-logo img { height: 36px; }
+    .card-logo-sub { font-size: 11px; color: #999; }
+
+    .info-box {
+      background: #f7fdf7; border-radius: 12px; padding: 14px 16px; margin-bottom: 14px;
+      border: 1px solid #e0f0e0;
+    }
+    .info-box-title { font-size: 11px; font-weight: 700; color: #007A33; text-transform: uppercase; margin-bottom: 10px; letter-spacing: 0.5px; }
+
+    .row { display: flex; justify-content: space-between; align-items: flex-start; padding: 9px 0; border-bottom: 1px solid #f0f7f0; }
+    .row:last-child { border-bottom: none; }
+    .row-label { color: #777; font-size: 13px; }
+    .row-value { color: #1a1a1a; font-size: 13px; font-weight: 600; text-align: right; max-width: 60%; word-break: break-all; }
+    .row-value.green { color: #007A33; font-size: 15px; font-weight: 700; }
+    .row-value.mono { font-family: monospace; font-size: 12px; color: #555; }
+    .badge { display: inline-flex; align-items: center; gap: 4px; background: #e8f9ee; color: #28a745; border-radius: 20px; padding: 3px 10px; font-size: 12px; font-weight: 700; }
+
+    .ref-box {
+      background: #f9f9f9; border-radius: 10px; padding: 12px 16px;
+      text-align: center; margin-top: 14px;
+      border: 1px dashed #ccc;
+    }
+    .ref-label { font-size: 11px; color: #aaa; margin-bottom: 4px; }
+    .ref-code { font-family: monospace; font-size: 14px; font-weight: 700; color: #333; letter-spacing: 1px; }
+
+    .footer { text-align: center; padding: 18px; color: #bbb; font-size: 11px; background: #fff; border-top: 1px solid #eee; }
+    .footer img { height: 22px; margin-bottom: 6px; }
+  </style>
+</head>
+<body>
+  <div class="nav">
+    <span class="nav-back">←</span>
+    <span class="nav-title">Biên lai giao dịch</span>
+  </div>
+
+  <div class="success-banner">
+    <div class="check-wrap"><div class="check-inner">✔</div></div>
+    <div class="success-label">Chuyển tiền thành công</div>
+    <div class="success-amount"><%= Number(transaction.amount).toLocaleString('vi-VN') %> <span class="vnd">VND</span></div>
+  </div>
+
+  <div class="card">
+    <div class="card-logo">
+      <img src="/logos/vcb.svg" alt="Vietcombank">
+      <span class="card-logo-sub">Vietcombank · Ngân hàng Ngoại thương VN</span>
+    </div>
+
+    <div class="info-box">
+      <div class="info-box-title">Thông tin người nhận</div>
+      <div class="row"><span class="row-label">Họ và tên</span><span class="row-value"><%= transaction.receiver_name %></span></div>
+      <div class="row"><span class="row-label">Số tài khoản</span><span class="row-value mono"><%= transaction.card_number %></span></div>
+      <div class="row"><span class="row-label">Ngân hàng</span><span class="row-value"><%= transaction.bank_name %></span></div>
+    </div>
+
+    <div class="info-box">
+      <div class="info-box-title">Thông tin chuyển khoản</div>
+      <div class="row"><span class="row-label">Số tiền</span><span class="row-value green"><%= Number(transaction.amount).toLocaleString('vi-VN') %> VND</span></div>
+      <div class="row"><span class="row-label">Phí dịch vụ</span><span class="row-value">0 VND</span></div>
+      <div class="row"><span class="row-label">Nội dung</span><span class="row-value mono"><%= transaction.recharge_no %></span></div>
+      <div class="row"><span class="row-label">Thời gian</span><span class="row-value"><%
+        var d = new Date(transaction.created_at);
+        var hh = String(d.getHours()).padStart(2,'0');
+        var mi = String(d.getMinutes()).padStart(2,'0');
+        var ss = String(d.getSeconds()).padStart(2,'0');
+        var dd2 = String(d.getDate()).padStart(2,'0');
+        var mm2 = String(d.getMonth()+1).padStart(2,'0');
+        var yy2 = d.getFullYear();
+      %><%= hh %>:<%= mi %>:<%= ss %><br><%= dd2 %>/<%= mm2 %>/<%= yy2 %></span></div>
+      <div class="row"><span class="row-label">Trạng thái</span><span class="row-value"><span class="badge">✔ Thành công</span></span></div>
+    </div>
+
+    <div class="ref-box">
+      <div class="ref-label">Mã giao dịch tham chiếu</div>
+      <div class="ref-code"><%= transaction.order_no %></div>
+    </div>
+  </div>
+
+  <div class="footer">
+    <div><img src="/logos/vcb.svg" alt="VCB"></div>
+    Vietcombank · Tin cậy, hiệu quả, hiện đại
+  </div>
+</body>
+</html>

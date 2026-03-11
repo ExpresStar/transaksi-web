@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 60" width="120" height="60">
+  <!-- Green rounded triangle icon -->
+  <path d="M28,8 C28,8 50,8 50,8 C54,8 56,12 54,16 L34,50 C32,54 24,54 22,50 L2,16 C0,12 2,8 6,8 Z" fill="#007A3D" transform="translate(2,0)"/>
+  <path d="M28,16 C28,16 44,16 44,16 C46,16 47,18 46,20 L34,42 C33,44 27,44 26,42 L14,20 C13,18 14,16 16,16 Z" fill="white" transform="translate(2,0)"/>
+  <!-- VCB text -->
+  <text x="62" y="38" font-family="Arial Black, Arial" font-weight="900" font-size="22" fill="#007A3D" letter-spacing="1">VCB</text>
+</svg>

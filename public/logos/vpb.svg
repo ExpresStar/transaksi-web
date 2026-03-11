@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 140 60" width="140" height="60">
+  <!-- Red tulip/leaf icon -->
+  <g transform="translate(26,30)">
+    <!-- center petal -->
+    <path d="M0,-22 C2,-12 2,0 0,10 C-2,0 -2,-12 0,-22 Z" fill="#E60028"/>
+    <!-- left petal -->
+    <path d="M0,2 C-6,-10 -18,-16 -18,-16 C-14,-6 -8,4 0,10 Z" fill="#E60028"/>
+    <!-- right petal -->
+    <path d="M0,2 C6,-10 18,-16 18,-16 C14,-6 8,4 0,10 Z" fill="#E60028"/>
+    <!-- stem -->
+    <rect x="-2" y="10" width="4" height="14" rx="2" fill="#E60028"/>
+  </g>
+  <!-- VPBank text -->
+  <text x="58" y="28" font-family="Arial Black, Arial" font-weight="900" font-size="14" fill="#E60028" letter-spacing="1">VPBank</text>
+  <text x="58" y="46" font-family="Arial, sans-serif" font-size="10" fill="#555" letter-spacing="0.5">Ngân hàng Việt Nam Thịnh Vượng</text>
+</svg>

@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Approval History</title>
+    <!-- We will reuse the same stylesheet as the main dashboard to ensure it looks EXACTLY identical -->
+    <link rel="stylesheet" href="/style.css">
+    <style>
+        body { background-color: #f0f2f5; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        .history-container { padding: 20px; }
+        .top-actions { display: flex; justify-content: flex-end; margin-bottom: 10px; gap: 8px; }
+        .table-wrap { background: #fff; padding: 15px; border-radius: 4px; box-shadow: 0 1px 4px rgba(0,0,0,0.05); }
+        .pagination { display: flex; justify-content: center; gap: 5px; margin-top: 15px; }
+        .page-btn { padding: 4px 10px; border: 1px solid #dcdfe6; background: #fff; color: #606266; border-radius: 4px; cursor: pointer; text-decoration: none; font-size: 13px; }
+        .page-btn.active { background: #409eff; color: #fff; border-color: #409eff; }
+        
+        /* Utility styles to strictly match the picture */
+        .text-red { color: #f56c6c; }
+        .badge { display: inline-block; padding: 3px 8px; border-radius: 4px; font-weight: normal; font-size: 12px; }
+        .badge.blue { background: #ecf5ff; border: 1px solid #d9ecff; color: #409eff; }
+        .badge.green { background: #f0f9eb; border: 1px solid #e1f3d8; color: #67c23a; }
+        .badge.gray { background: #f4f4f5; color: #909399; border: 1px solid #d3d4d6; }
+        
+        .action-btn { font-size: 12px; padding: 4px 8px; border: none; border-radius: 4px; cursor: pointer; color: #fff; }
+        .action-btn.btn-teal { background-color: #00b4a7; }
+        .action-btn.btn-green { background-color: #4CAF50; }
+    </style>
+</head>
+<body>
+    <div class="history-container">
+        <!-- Top Filter Buttons Area (from the screenshot) -->
+        <div class="top-actions">
+            <div style="display: flex; align-items: center; background: #fff; border: 1px solid #dcdfe6; border-radius: 4px; padding: 0 8px; margin-right: 8px;">
+                <span style="color: #909399; margin-right: 4px;">🔍</span>
+                <input type="text" id="worker-search" placeholder="搜索处理人 (bot/bobi908)" style="border: none; outline: none; padding: 6px 0; font-size: 13px; width: 200px;">
+            </div>
+            <button class="btn btn-green" onclick="filterByWorker()">🔍 搜索</button>
+            <button class="btn btn-orange" onclick="resetFilter()">⟲ 重置</button>
+            <button class="btn btn-blue">今天</button>
+            <button class="btn btn-gray">昨天</button>
+        </div>
+
+        <div class="table-wrap">
+            <div class="table-toolbar" style="display: flex; justify-content: flex-end; padding-bottom: 10px; border-bottom: 1px solid #ebeef5; margin-bottom: 10px;">
+                <div class="btn-group">
+                    <button class="toolbar-btn" onclick="filterByWorker()">🔍</button>
+                    <button class="toolbar-btn" onclick="location.reload()">↻</button>
+                    <button class="toolbar-btn">▤ ▾</button>
+                    <button class="toolbar-btn">⤓</button>
+                </div>
+            </div>
+            <table class="data-table" id="history-table">
+                <thead>
+                    <tr>
+                        <th>充值单号</th>
+                        <th>跑分者</th>
+                        <th>跑分者类型</th>
+                        <th>充值金额</th>
+                        <th>收款账户</th>
+                        <th>卡号/虚拟地址</th>
+                        <th>银行名称</th>
+                        <th>提取状态</th>
+                        <th>充值单来源</th>
+                        <th>创建时间</th>
+                        <th>接单时间</th>
+                        <th>转账时间</th>
+                        <th>入账时间</th>
+                        <th>处理人</th>
+                        <th>跑分者等级</th>
+                        <th>允许入账时间</th>
+                        <th>操作</th>
+                        <th>操作2</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% if (transactions.length === 0) { %>
+                        <tr><td colspan="18" style="text-align: center; padding: 40px; color: #999;">暂无数据</td></tr>
+                    <% } %>
+                    <% transactions.forEach((tx, i) => { 
+                        // Helper to format date
+                        function fmt(d) {
+                            if (!d) return '--';
+                            const date = new Date(d);
+                            // Adjust for GMT+7
+                            const localTime = new Date(date.getTime() + (7 * 60 * 60 * 1000));
+                            const iso = localTime.toISOString();
+                            // extracts YYYY-MM-DD from 2026-03-01T11:32:27.000Z
+                            const ymd = iso.split('T')[0];
+                            const time = iso.split('T')[1].substring(0, 8);
+                            return ymd + ' ' + time;
+                        }
+                    %>
+                    <tr class="tx-row" data-worker="<%= tx.approvedBy %>">
+                        <!-- 1. 充值单号 -->
+                        <td class="text-red"><%= tx.recharge_no %></td>
+                        <!-- 2. 跑分者 -->
+                        <td>0931263463</td>
+                        <!-- 3. 跑分者类型 -->
+                        <td><span class="badge blue">代付</span></td>
+                        <!-- 4. 充值金额 -->
+                        <td><%= Number(tx.amount).toLocaleString('vi-VN') %>.000</td>
+                        <!-- 5. 收款账户 -->
+                        <td><%= tx.receiver_name %></td>
+                        <!-- 6. 卡号/虚拟地址 -->
+                        <td><%= tx.card_number %></td>
+                        <!-- 7. 银行名称 -->
+                        <td><%= tx.bank_name %></td>
+                        <!-- 8. 提取状态 -->
+                        <td><span class="badge blue">取消跟单</span></td>
+                        <!-- 9. 充值单来源 -->
+                        <td><span class="badge blue">商户代理</span></td>
+                        <!-- 10. 创建时间 -->
+                        <td>
+                            <div style="line-height:1.2"><%= fmt(tx.created_at).split(' ')[0] %><br><%= fmt(tx.created_at).split(' ')[1] %></div>
+                        </td>
+                        <!-- 11. 接单时间 -->
+                        <td>1分钟内</td>
+                        <!-- 12. 转账时间 -->
+                        <td>
+                            <div style="line-height:1.2"><%= fmt(tx.created_at).split(' ')[0] %><br><%= fmt(tx.created_at).split(' ')[1] %></div>
+                        </td>
+                        <!-- 13. 入账时间 -->
+                        <td>--</td>
+                        <!-- 14. 处理人 -->
+                        <td class="worker-name"><%= tx.approvedBy %></td>
+                        <!-- 15. 跑分者等级 -->
+                        <td><span class="badge green">0.5小时</span></td>
+                        <!-- 16. 允许入账时间 -->
+                        <td>
+                            <div style="line-height:1.2"><%= fmt(tx.allow_transfer_time).split(' ')[0] %><br><%= fmt(tx.allow_transfer_time).split(' ')[1] %></div>    
+                        </td>
+                        <!-- 17. 操作 -->
+                        <td>
+                            <span class="action-btn btn-green">审签</span>
+                        </td>
+                        <!-- 18. 操作2 -->
+                        <td>
+                            <a href="/transaction-detail/<%= tx.id %>" target="_blank" class="action-btn btn-teal" style="text-decoration:none;">☑ 详情</a>
+                        </td>
+                    </tr>
+                    <% }) %>
+                </tbody>
+            </table>
+
+            <!-- Footer Pagination (Static UI to match the screenshot) -->
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 15px;">
+                <div style="font-size: 13px; color: #606266; font-weight: 500;">
+                    <span id="mandarin-date-footer"></span> 
+                    &nbsp;&nbsp;
+                    <span id="total-count-display">共 <%= total %> 条</span>
+                </div>
+                <!-- Hidden count used by the script -->
+                <span id="total-count" style="display:none;"><%= total %></span>
+                <div class="pagination">
+                    <a href="#" class="page-btn active">1</a>
+                    <a href="#" class="page-btn">2</a>
+                    <a href="#" class="page-btn">3</a>
+                    <a href="#" class="page-btn">4</a>
+                    <a href="#" class="page-btn">5</a>
+                    <span style="color: #999; padding: 4px;">...</span>
+                    <a href="#" class="page-btn"><%= Math.max(1, Math.ceil(total / 10)) %></a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Display Mandarin Date in footer
+        function updateMandarinDate() {
+            const now = new Date();
+            const y = now.getFullYear();
+            const m = String(now.getMonth() + 1).padStart(2, '0');
+            const d = String(now.getDate()).padStart(2, '0');
+            const mandarinDate = `${y}年${m}月${d}日`;
+            document.getElementById('mandarin-date-footer').innerText = mandarinDate;
+        }
+        updateMandarinDate();
+
+        function filterByWorker() {
+            const query = document.getElementById('worker-search').value.toLowerCase().trim();
+            const rows = document.querySelectorAll('.tx-row');
+            let visibleCount = 0;
+
+            rows.forEach(row => {
+                const worker = row.getAttribute('data-worker').toLowerCase();
+                if (worker.includes(query)) {
+                    row.style.display = '';
+                    visibleCount++;
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+
+            document.getElementById('total-count-display').innerText = '共 ' + visibleCount + ' 条';
+        }
+
+        function resetFilter() {
+            location.reload();
+        }
+
+        // Allow Enter key to trigger search
+        document.getElementById('worker-search').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                filterByWorker();
+            }
+        });
+
+        // Auto-refresh every 10 seconds
+        let autoRefreshTimer = setInterval(() => {
+            // Only auto-refresh if the search bar is empty
+            if (!document.getElementById('worker-search').value.trim()) {
+                location.reload();
+            }
+        }, 10000);
+    </script>
+</body>
+</html>

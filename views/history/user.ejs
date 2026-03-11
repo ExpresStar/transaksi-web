@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= username %> 的审批记录</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Segoe UI', Arial, sans-serif; background: #f4f6f9; min-height: 100vh; font-size: 13px; }
+    .topbar { background: #1a3c6e; padding: 14px 24px; display: flex; align-items: center; gap: 16px; }
+    .topbar a { color: #adc8f0; text-decoration: none; font-size: 13px; }
+    .topbar-title { color: #fff; font-size: 16px; font-weight: 700; flex: 1; }
+    .container { padding: 24px; }
+    .summary { background: #fff; border-radius: 10px; padding: 18px 24px; margin-bottom: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); display: flex; align-items: center; justify-content: space-between; }
+    .summary-user { font-size: 18px; font-weight: 700; color: #1a3c6e; }
+    .summary-count { font-size: 13px; color: #888; margin-top: 3px; }
+    .badge-count { background: #1a3c6e; color: #fff; border-radius: 20px; padding: 6px 18px; font-weight: 700; font-size: 15px; }
+    table { width: 100%; border-collapse: collapse; background: #fff; border-radius: 10px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+    thead { background: #1a3c6e; color: #fff; }
+    thead th { padding: 12px 14px; text-align: left; font-weight: 600; font-size: 12px; white-space: nowrap; }
+    tbody tr { border-bottom: 1px solid #f0f0f0; }
+    tbody tr:last-child { border-bottom: none; }
+    tbody tr:hover { background: #f7f9ff; }
+    td { padding: 10px 14px; color: #333; white-space: nowrap; }
+    td.red { color: #e6a23c; font-weight: 600; }
+    .badge { display: inline-block; border-radius: 4px; padding: 2px 8px; font-size: 11px; font-weight: 600; }
+    .badge-green { background: #e8f9ee; color: #28a745; }
+    .badge-red { background: #fde8e8; color: #e74c3c; }
+    .mono { font-family: monospace; font-size: 11px; color: #888; }
+    .footer { padding: 16px 24px; background: #fff; margin-top: 1px; border-radius: 0 0 10px 10px; display: flex; justify-content: space-between; align-items: center; color: #888; font-size: 12px; }
+    .empty { text-align: center; padding: 60px; color: #bbb; }
+  </style>
+</head>
+<body>
+  <div class="topbar">
+    <a href="/approval-history">← 排行榜</a>
+    <span class="topbar-title"><%= username %> 的审批记录</span>
+    <a href="/">主页</a>
+  </div>
+
+  <div class="container">
+    <div class="summary">
+      <div>
+        <div class="summary-user">👤 <%= username %></div>
+        <div class="summary-count">共处理 <%= total %> 笔订单</div>
+      </div>
+      <span class="badge-count"><%= total %> 笔</span>
+    </div>
+
+    <% if (transactions.length === 0) { %>
+      <div style="background:#fff;border-radius:10px;padding:60px;text-align:center;color:#bbb;">
+        暂无审批记录
+      </div>
+    <% } else { %>
+    <table>
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>订单号</th>
+          <th>充值号</th>
+          <th>收款人</th>
+          <th>账号</th>
+          <th>银行</th>
+          <th>金额</th>
+          <th>状态</th>
+          <th>审批时间</th>
+          <th>操作</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% transactions.forEach((tx, i) => {
+          var d = new Date(tx.approvedAt);
+          var hh = String(d.getHours()).padStart(2,'0');
+          var mi = String(d.getMinutes()).padStart(2,'0');
+          var ss = String(d.getSeconds()).padStart(2,'0');
+          var dd = String(d.getDate()).padStart(2,'0');
+          var mm = String(d.getMonth()+1).padStart(2,'0');
+          var yy = d.getFullYear();
+        %>
+        <tr>
+          <td><%= i+1 %></td>
+          <td class="mono"><%= tx.order_no %></td>
+          <td class="mono"><%= tx.recharge_no %></td>
+          <td><%= tx.receiver_name %></td>
+          <td class="mono"><%= tx.card_number %></td>
+          <td><%= tx.bank_name %></td>
+          <td class="red"><%= Number(tx.amount).toLocaleString('vi-VN') %> VND</td>
+          <td><span class="badge badge-green">已同意</span></td>
+          <td>
+            <%= yy %>-<%= mm %>-<%= dd %> <%= hh %>:<%= mi %>:<%= ss %>
+            <span style="margin-left:8px; display:inline-block; padding:2px 6px; background:#ecf5ff; color:#409eff; border-radius:4px; font-size:11px; font-weight:bold;">
+              @<%= tx.approvedBy %>
+            </span>
+          </td>
+          <td>
+            <a href="/transaction-detail/<%= tx.id %>" target="_blank"
+               style="display:inline-block;padding:4px 12px;background:#409eff;color:#fff;
+                      border-radius:4px;font-size:12px;font-weight:600;text-decoration:none;">
+              📄 查看凭证
+            </a>
+          </td>
+        </tr>
+        <% }) %>
+      </tbody>
+    </table>
+    <div class="footer">
+      <span>共 <%= total %> 条</span>
+      <span><a href="/approval-history" style="color:#409eff;text-decoration:none;">← 返回排行榜</a></span>
+    </div>
+    <% } %>
+  </div>
+</body>
+</html>

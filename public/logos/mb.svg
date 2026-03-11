@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 170 70" width="170" height="70">
+  <!--
+    MB Bank asterisk logo:
+    - 8 pill/capsule arms
+    - Arms START 5px from center (gap!) — not touching center
+    - Arms END 20px from center
+    - Thick rounded pills (9px wide)
+    - Bright red #E8002D
+  -->
+  <g transform="translate(36,35)">
+    <rect x="-4.5" y="5"  width="9" height="15" rx="4.5" ry="4.5" fill="#E8002D" transform="rotate(0)"/>
+    <rect x="-4.5" y="5"  width="9" height="15" rx="4.5" ry="4.5" fill="#E8002D" transform="rotate(45)"/>
+    <rect x="-4.5" y="5"  width="9" height="15" rx="4.5" ry="4.5" fill="#E8002D" transform="rotate(90)"/>
+    <rect x="-4.5" y="5"  width="9" height="15" rx="4.5" ry="4.5" fill="#E8002D" transform="rotate(135)"/>
+    <rect x="-4.5" y="5"  width="9" height="15" rx="4.5" ry="4.5" fill="#E8002D" transform="rotate(180)"/>
+    <rect x="-4.5" y="5"  width="9" height="15" rx="4.5" ry="4.5" fill="#E8002D" transform="rotate(225)"/>
+    <rect x="-4.5" y="5"  width="9" height="15" rx="4.5" ry="4.5" fill="#E8002D" transform="rotate(270)"/>
+    <rect x="-4.5" y="5"  width="9" height="15" rx="4.5" ry="4.5" fill="#E8002D" transform="rotate(315)"/>
+  </g>
+
+  <!-- Bold Blue MB text -->
+  <text x="74" y="48"
+        font-family="Arial Black, Arial, sans-serif"
+        font-weight="900"
+        font-size="38"
+        fill="#0033A0"
+        letter-spacing="-1">MB</text>
+</svg>
