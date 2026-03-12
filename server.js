@@ -633,6 +633,10 @@ app.get("/transaction-detail/:id", (req, res) => {
   }
 });
 
+app.get('/', (req, res) => {
+  res.sendFile(__dirname + '/index.html');
+});
+
 const PORT = process.env.PORT || 3001;
 
 app.listen(PORT, () => {
